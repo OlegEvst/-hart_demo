@@ -1,0 +1,86 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Автоматическое определение базового пути (работает в корне и подпапках)
+    # Если приложение в подпапке, раскомментируйте и укажите путь:
+    # RewriteBase /charts/
+    
+    # Перенаправление всех запросов на index.html для React Router (SPA)
+    RewriteRule ^index\.html$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . index.html [L]
+</IfModule>
+
+# Сжатие файлов для ускорения загрузки
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json application/xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# Кэширование статических файлов
+<IfModule mod_expires.c>
+    ExpiresActive On
+    # HTML не кэшируем - всегда загружаем свежую версию
+    ExpiresByType text/html "access plus 0 seconds"
+    # Статические ресурсы с хешем кэшируем на год (Vite добавляет хеш к именам файлов)
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    # CSS и JS с хешем можно кэшировать долго
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType application/x-javascript "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+</IfModule>
+
+# Отключаем кэширование для HTML файлов через заголовки
+<IfModule mod_headers.c>
+    # HTML файлы не кэшируем
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+</IfModule>
+
+# Заголовки безопасности
+<IfModule mod_headers.c>
+    # Защита от XSS
+    Header set X-XSS-Protection "1; mode=block"
+    # Защита от MIME-sniffing
+    Header set X-Content-Type-Options "nosniff"
+    # Разрешаем встраивание в iframe с любых доменов
+    # Удаляем X-Frame-Options, чтобы разрешить встраивание
+    Header unset X-Frame-Options
+    # Используем Content-Security-Policy для более гибкого контроля
+    Header set Content-Security-Policy "frame-ancestors *;"
+    # Удаляем информацию о сервере
+    Header unset Server
+    Header unset X-Powered-By
+</IfModule>
+
+# Запрет доступа к скрытым файлам
+# Совместимость с Apache 2.2 и 2.4
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+# Для Apache 2.2 (если Require не поддерживается, раскомментируйте):
+# <FilesMatch "^\.">
+#     Order allow,deny
+#     Deny from all
+# </FilesMatch>
+
+# MIME типы
+<IfModule mod_mime.c>
+    AddType application/javascript js
+    AddType text/css css
+    AddType image/svg+xml svg
+    AddType application/json json
+</IfModule>

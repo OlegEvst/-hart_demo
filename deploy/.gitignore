@@ -1,0 +1,22 @@
+# Зависимости
+server/node_modules/
+admin/node_modules/
+static/node_modules/
+
+# Переменные окружения
+server/.env
+admin/.env
+
+# Логи
+*.log
+server/logs/
+admin/logs/
+
+# Временные файлы
+server/uploads/*
+!server/uploads/.gitkeep
+*.tmp
+
+# OS файлы
+.DS_Store
+Thumbs.db

@@ -1,0 +1,2646 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конструктор графиков из Excel</title>
+    <style>
+        /* Material 3 Design Tokens */
+        :root {
+            /* Primary Colors */
+            --md-sys-color-primary: #6750A4;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #EADDFF;
+            --md-sys-color-on-primary-container: #21005D;
+            
+            /* Secondary Colors */
+            --md-sys-color-secondary: #625B71;
+            --md-sys-color-on-secondary: #FFFFFF;
+            --md-sys-color-secondary-container: #E8DEF8;
+            --md-sys-color-on-secondary-container: #1D192B;
+            
+            /* Tertiary Colors */
+            --md-sys-color-tertiary: #7D5260;
+            --md-sys-color-on-tertiary: #FFFFFF;
+            --md-sys-color-tertiary-container: #FFD8E4;
+            --md-sys-color-on-tertiary-container: #31111D;
+            
+            /* Error Colors */
+            --md-sys-color-error: #BA1A1A;
+            --md-sys-color-on-error: #FFFFFF;
+            --md-sys-color-error-container: #FFDAD6;
+            --md-sys-color-on-error-container: #410002;
+            
+            /* Success Colors */
+            --md-sys-color-success: #4CAF50;
+            --md-sys-color-on-success: #FFFFFF;
+            --md-sys-color-success-container: #C8E6C9;
+            --md-sys-color-on-success-container: #1B5E20;
+            
+            /* Surface Colors */
+            --md-sys-color-surface: #FFFBFE;
+            --md-sys-color-on-surface: #1C1B1F;
+            --md-sys-color-surface-variant: #E7E0EC;
+            --md-sys-color-on-surface-variant: #49454F;
+            --md-sys-color-surface-container: #F7F2FA;
+            --md-sys-color-surface-container-high: #F1ECF5;
+            --md-sys-color-surface-container-highest: #EBE6EF;
+            
+            /* Background */
+            --md-sys-color-background: #FFFBFE;
+            --md-sys-color-on-background: #1C1B1F;
+            
+            /* Outline */
+            --md-sys-color-outline: #79747E;
+            --md-sys-color-outline-variant: #CAC4D0;
+            
+            /* Shadow/Elevation */
+            --md-sys-elevation-level0: none;
+            --md-sys-elevation-level1: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+            --md-sys-elevation-level2: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+            --md-sys-elevation-level3: 0px 1px 3px 0px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15);
+            --md-sys-elevation-level4: 0px 2px 3px 0px rgba(0, 0, 0, 0.3), 0px 6px 10px 4px rgba(0, 0, 0, 0.15);
+            --md-sys-elevation-level5: 0px 4px 4px 0px rgba(0, 0, 0, 0.3), 0px 8px 12px 6px rgba(0, 0, 0, 0.15);
+            
+            /* Shape */
+            --md-sys-shape-corner-none: 0px;
+            --md-sys-shape-corner-extra-small: 4px;
+            --md-sys-shape-corner-small: 8px;
+            --md-sys-shape-corner-medium: 12px;
+            --md-sys-shape-corner-large: 16px;
+            --md-sys-shape-corner-extra-large: 28px;
+            --md-sys-shape-corner-full: 9999px;
+            
+            /* Typography */
+            --md-sys-typescale-display-large-size: 57px;
+            --md-sys-typescale-display-medium-size: 45px;
+            --md-sys-typescale-display-small-size: 36px;
+            --md-sys-typescale-headline-large-size: 32px;
+            --md-sys-typescale-headline-medium-size: 28px;
+            --md-sys-typescale-headline-small-size: 24px;
+            --md-sys-typescale-title-large-size: 22px;
+            --md-sys-typescale-title-medium-size: 16px;
+            --md-sys-typescale-title-small-size: 14px;
+            --md-sys-typescale-body-large-size: 16px;
+            --md-sys-typescale-body-medium-size: 14px;
+            --md-sys-typescale-body-small-size: 12px;
+            --md-sys-typescale-label-large-size: 14px;
+            --md-sys-typescale-label-medium-size: 12px;
+            --md-sys-typescale-label-small-size: 11px;
+            
+            /* Spacing */
+            --md-sys-spacing-1: 4px;
+            --md-sys-spacing-2: 8px;
+            --md-sys-spacing-3: 12px;
+            --md-sys-spacing-4: 16px;
+            --md-sys-spacing-5: 20px;
+            --md-sys-spacing-6: 24px;
+            --md-sys-spacing-8: 32px;
+            --md-sys-spacing-10: 40px;
+            --md-sys-spacing-12: 48px;
+            --md-sys-spacing-16: 64px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--md-sys-color-background);
+            color: var(--md-sys-color-on-background);
+            padding: var(--md-sys-spacing-5);
+            line-height: 1.5;
+            font-size: var(--md-sys-typescale-body-large-size);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--md-sys-color-surface);
+            border-radius: var(--md-sys-shape-corner-large);
+            padding: var(--md-sys-spacing-8);
+            box-shadow: var(--md-sys-elevation-level2);
+        }
+
+        h1 {
+            margin-bottom: var(--md-sys-spacing-8);
+            color: var(--md-sys-color-on-surface);
+            font-size: var(--md-sys-typescale-headline-large-size);
+            font-weight: 400;
+            text-align: center;
+            letter-spacing: 0;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--md-sys-spacing-10);
+            position: relative;
+            padding: 0 var(--md-sys-spacing-4);
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: var(--md-sys-spacing-4);
+            right: var(--md-sys-spacing-4);
+            height: 2px;
+            background: var(--md-sys-color-outline-variant);
+            z-index: 0;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--md-sys-shape-corner-full);
+            background: var(--md-sys-color-surface-container-highest);
+            color: var(--md-sys-color-on-surface-variant);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: var(--md-sys-typescale-title-medium-size);
+            margin: 0 auto var(--md-sys-spacing-2);
+            transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+            border: 2px solid transparent;
+        }
+
+        .step.active .step-number {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            box-shadow: var(--md-sys-elevation-level1);
+        }
+
+        .step.completed .step-number {
+            background: var(--md-sys-color-success);
+            color: var(--md-sys-color-on-success);
+        }
+
+        .step-title {
+            font-size: var(--md-sys-typescale-label-large-size);
+            color: var(--md-sys-color-on-surface-variant);
+            font-weight: 500;
+            letter-spacing: 0.1px;
+        }
+
+        .step.active .step-title {
+            color: var(--md-sys-color-primary);
+            font-weight: 500;
+        }
+
+        .step-content {
+            display: none;
+            padding: var(--md-sys-spacing-8);
+            background: var(--md-sys-color-surface-container);
+            border-radius: var(--md-sys-shape-corner-medium);
+            min-height: 400px;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .step-content h2 {
+            margin-bottom: var(--md-sys-spacing-5);
+            color: var(--md-sys-color-on-surface);
+            font-size: var(--md-sys-typescale-headline-small-size);
+            font-weight: 400;
+            letter-spacing: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: var(--md-sys-spacing-2);
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+            font-size: var(--md-sys-typescale-label-large-size);
+            letter-spacing: 0.1px;
+        }
+
+        input[type="file"],
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: var(--md-sys-spacing-3) var(--md-sys-spacing-4);
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: var(--md-sys-shape-corner-extra-small);
+            font-size: var(--md-sys-typescale-body-large-size);
+            font-family: inherit;
+            margin-bottom: var(--md-sys-spacing-5);
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        input[type="file"]:focus,
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--md-sys-color-primary);
+            border-width: 2px;
+            padding: calc(var(--md-sys-spacing-3) - 1px) calc(var(--md-sys-spacing-4) - 1px);
+        }
+
+        input[type="file"] {
+            padding: var(--md-sys-spacing-2);
+            cursor: pointer;
+        }
+
+        input[type="color"] {
+            width: 60px;
+            height: 40px;
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: var(--md-sys-shape-corner-extra-small);
+            cursor: pointer;
+            margin-right: var(--md-sys-spacing-4);
+        }
+
+        button {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            border: none;
+            padding: var(--md-sys-spacing-3) var(--md-sys-spacing-6);
+            border-radius: var(--md-sys-shape-corner-full);
+            font-size: var(--md-sys-typescale-label-large-size);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+            font-family: inherit;
+            letter-spacing: 0.1px;
+            text-transform: uppercase;
+            box-shadow: var(--md-sys-elevation-level1);
+            min-height: 40px;
+        }
+
+        button:hover:not(:disabled) {
+            box-shadow: var(--md-sys-elevation-level2);
+            background: color-mix(in srgb, var(--md-sys-color-primary) 85%, black);
+        }
+
+        button:active:not(:disabled) {
+            box-shadow: var(--md-sys-elevation-level1);
+        }
+
+        button:disabled {
+            background: var(--md-sys-color-surface-container-highest);
+            color: var(--md-sys-color-on-surface);
+            opacity: 0.38;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-primary {
+            background: var(--md-sys-color-primary);
+            font-size: var(--md-sys-typescale-label-large-size);
+            padding: var(--md-sys-spacing-4) var(--md-sys-spacing-8);
+            width: 100%;
+            margin-top: var(--md-sys-spacing-5);
+        }
+
+        .btn-secondary {
+            background: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
+            margin-right: var(--md-sys-spacing-2);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: color-mix(in srgb, var(--md-sys-color-secondary-container) 85%, black);
+        }
+
+        .status {
+            padding: var(--md-sys-spacing-4);
+            border-radius: var(--md-sys-shape-corner-small);
+            margin-bottom: var(--md-sys-spacing-4);
+            display: none;
+            font-size: var(--md-sys-typescale-body-medium-size);
+            letter-spacing: 0.25px;
+        }
+
+        .status.success {
+            background: var(--md-sys-color-success-container);
+            color: var(--md-sys-color-on-success-container);
+            border: 1px solid var(--md-sys-color-success);
+            display: block;
+        }
+
+        .status.error {
+            background: var(--md-sys-color-error-container);
+            color: var(--md-sys-color-on-error-container);
+            border: 1px solid var(--md-sys-color-error);
+            display: block;
+        }
+
+        .status.info {
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            border: 1px solid var(--md-sys-color-primary);
+            display: block;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--md-sys-color-surface-container-highest);
+            border-top: 2px solid var(--md-sys-color-primary);
+            border-radius: var(--md-sys-shape-corner-full);
+            animation: spin 1s linear infinite;
+            margin-right: var(--md-sys-spacing-2);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            margin-top: var(--md-sys-spacing-8);
+            padding: var(--md-sys-spacing-5);
+            background: var(--md-sys-color-surface-container);
+            border-radius: var(--md-sys-shape-corner-medium);
+            display: none;
+            box-shadow: var(--md-sys-elevation-level1);
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .results h3 {
+            margin-bottom: var(--md-sys-spacing-4);
+            color: var(--md-sys-color-on-surface);
+            font-size: var(--md-sys-typescale-title-large-size);
+            font-weight: 400;
+        }
+
+        .results code {
+            background: var(--md-sys-color-surface-container-high);
+            padding: var(--md-sys-spacing-3);
+            border-radius: var(--md-sys-shape-corner-extra-small);
+            display: block;
+            font-family: 'Roboto Mono', 'Courier New', monospace;
+            font-size: var(--md-sys-typescale-body-small-size);
+            overflow-x: auto;
+            color: var(--md-sys-color-on-surface);
+        }
+
+        /* Excel таблица */
+        .excel-viewer {
+            margin-top: var(--md-sys-spacing-5);
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid var(--md-sys-color-outline-variant);
+            border-radius: var(--md-sys-shape-corner-small);
+            position: relative;
+            background: var(--md-sys-color-surface);
+            box-shadow: var(--md-sys-elevation-level1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--md-sys-typescale-body-small-size);
+        }
+
+        th, td {
+            padding: var(--md-sys-spacing-2);
+            border: 1px solid var(--md-sys-color-outline-variant);
+            text-align: left;
+            position: relative;
+        }
+
+        th {
+            background: var(--md-sys-color-surface-container-high);
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            color: var(--md-sys-color-on-surface);
+            font-size: var(--md-sys-typescale-label-medium-size);
+        }
+
+        .row-header {
+            background: var(--md-sys-color-surface-container-high);
+            font-weight: 500;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            min-width: 60px;
+        }
+
+        .cell-selected {
+            background: #007AFF !important;
+            color: white;
+        }
+
+        .cell-selected-totalnet {
+            border: 2px solid #FF9500 !important;
+            background-color: rgba(255, 149, 0, 0.1) !important;
+        }
+
+        .cell-selected-load {
+            border: 2px solid #34C759 !important;
+            background-color: rgba(52, 199, 89, 0.1) !important;
+        }
+
+        .cell-selected-reserve {
+            border: 2px solid #007AFF !important;
+            background-color: rgba(0, 122, 255, 0.1) !important;
+        }
+        
+        .cell-dragging {
+            border: 2px solid #FF9500 !important;
+            background-color: transparent !important;
+        }
+        
+        #excelViewer td {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        
+        #excelViewer td.selecting {
+            cursor: crosshair !important;
+        }
+
+        tr:hover td:not(.row-header):not(.selecting) {
+            background: var(--md-sys-color-primary-container) !important;
+            opacity: 0.5;
+        }
+        
+        /* Убираем hover эффект в режиме выбора */
+        #excelViewer.selecting-mode tr:hover td:not(.row-header) {
+            background: inherit !important;
+        }
+
+        .cell-highlight {
+            background: #FFF3CD !important;
+        }
+
+        .cell-data {
+            background: #D4EDDA !important;
+        }
+
+        .cell-label {
+            background: #D1ECF1 !important;
+        }
+
+        .chart-type-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--md-sys-spacing-4);
+            margin-top: var(--md-sys-spacing-5);
+        }
+
+        .chart-type-card {
+            padding: var(--md-sys-spacing-5);
+            border: 1px solid var(--md-sys-color-outline-variant);
+            border-radius: var(--md-sys-shape-corner-medium);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+            text-align: center;
+            background: var(--md-sys-color-surface);
+            box-shadow: var(--md-sys-elevation-level1);
+        }
+
+        .chart-type-card:hover {
+            border-color: var(--md-sys-color-primary);
+            background: var(--md-sys-color-primary-container);
+            box-shadow: var(--md-sys-elevation-level2);
+        }
+
+        .chart-type-card.selected {
+            border-color: var(--md-sys-color-primary);
+            background: var(--md-sys-color-primary-container);
+            box-shadow: var(--md-sys-elevation-level2);
+        }
+
+        .chart-type-card h3 {
+            margin-bottom: var(--md-sys-spacing-2);
+            color: var(--md-sys-color-on-primary-container);
+            font-size: var(--md-sys-typescale-title-large-size);
+            font-weight: 400;
+        }
+
+        .chart-type-card p {
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: var(--md-sys-typescale-body-medium-size);
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: var(--md-sys-spacing-8);
+            gap: var(--md-sys-spacing-2);
+        }
+
+        .object-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--md-sys-spacing-4);
+            margin-top: var(--md-sys-spacing-5);
+        }
+
+        .object-card {
+            padding: var(--md-sys-spacing-4);
+            border: 1px solid var(--md-sys-color-outline-variant);
+            border-radius: var(--md-sys-shape-corner-medium);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+            text-align: center;
+            background: var(--md-sys-color-surface);
+            box-shadow: var(--md-sys-elevation-level1);
+        }
+
+        .object-card:hover {
+            border-color: var(--md-sys-color-primary);
+            background: var(--md-sys-color-primary-container);
+            box-shadow: var(--md-sys-elevation-level2);
+        }
+
+        .object-card.selected {
+            border-color: var(--md-sys-color-primary);
+            background: var(--md-sys-color-primary-container);
+            box-shadow: var(--md-sys-elevation-level2);
+        }
+
+        .quick-select {
+            display: flex;
+            gap: var(--md-sys-spacing-2);
+            margin-bottom: var(--md-sys-spacing-4);
+            flex-wrap: wrap;
+        }
+
+        .quick-select button {
+            padding: var(--md-sys-spacing-2) var(--md-sys-spacing-4);
+            font-size: var(--md-sys-typescale-label-medium-size);
+            background: var(--md-sys-color-success);
+            color: var(--md-sys-color-on-success);
+        }
+
+        .quick-select button:hover:not(:disabled) {
+            background: color-mix(in srgb, var(--md-sys-color-success) 85%, black);
+        }
+
+        .color-group {
+            display: flex;
+            align-items: center;
+            gap: var(--md-sys-spacing-4);
+            margin-bottom: var(--md-sys-spacing-4);
+        }
+
+        .section-title {
+            font-size: var(--md-sys-typescale-title-medium-size);
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+            margin-bottom: var(--md-sys-spacing-3);
+            letter-spacing: 0.15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Конструктор графиков из Excel</h1>
+
+        <div id="status" class="status"></div>
+
+        <!-- Шаги -->
+        <div class="steps">
+            <div class="step active" id="step1-indicator">
+                <div class="step-number">1</div>
+                <div class="step-title">Выбор объекта</div>
+            </div>
+            <div class="step" id="step2-indicator">
+                <div class="step-number">2</div>
+                <div class="step-title">Тип графика</div>
+            </div>
+            <div class="step" id="step3-indicator">
+                <div class="step-number">3</div>
+                <div class="step-title">Выбор данных</div>
+            </div>
+            <div class="step" id="step4-indicator">
+                <div class="step-number">4</div>
+                <div class="step-title">Создание</div>
+            </div>
+        </div>
+
+        <!-- Шаг 1: Выбор объекта -->
+        <div class="step-content active" id="step1">
+            <h2>Шаг 1: Загрузите файл и выберите объект</h2>
+            <label for="excelFile">Выберите Excel файл (.xlsx, .xls):</label>
+            <input type="file" id="excelFile" accept=".xlsx,.xls" onchange="uploadExcel()">
+            
+            <div style="margin-top: var(--md-sys-spacing-5); padding: var(--md-sys-spacing-4); background: var(--md-sys-color-primary-container); border-radius: var(--md-sys-shape-corner-small); margin-bottom: var(--md-sys-spacing-4); color: var(--md-sys-color-on-primary-container);">
+                <strong>Инструкция:</strong> После загрузки файла кликните на ячейку с названием объекта (например, "ТЭЦ-11", "РТС Перово", "ЛОС" и т.д.)
+            </div>
+
+            <div id="selectedObjectInfo" style="display: none; padding: var(--md-sys-spacing-4); background: var(--md-sys-color-success-container); border-radius: var(--md-sys-shape-corner-small); margin-bottom: var(--md-sys-spacing-4); color: var(--md-sys-color-on-success-container);">
+                <strong>Выбранный объект:</strong> <span id="selectedObjectName"></span> (строка <span id="selectedObjectRow"></span>)
+            </div>
+
+            <div class="excel-viewer" id="excelViewerStep1" style="display: none; margin-top: 20px;"></div>
+            
+            <div class="navigation-buttons">
+                <button onclick="goToStep(2)" id="step1-next" disabled style="opacity: 0.5;">Далее</button>
+            </div>
+        </div>
+
+        <!-- Шаг 2: Тип графика -->
+        <div class="step-content" id="step2">
+            <h2>Шаг 2: Выберите тип графика</h2>
+            <div class="chart-type-grid">
+                <div class="chart-type-card" onclick="selectChartType('balance', this)">
+                    <h3>Баланс</h3>
+                    <p>Текущие данные баланса</p>
+                </div>
+                <div class="chart-type-card" onclick="selectChartType('reserve', this)">
+                    <h3>Резерв</h3>
+                    <p>Текущие данные резерва</p>
+                </div>
+                <div class="chart-type-card" onclick="selectChartType('modeling_balance', this)">
+                    <h3>Моделирование баланса</h3>
+                    <p>Прогнозные данные баланса</p>
+                </div>
+                <div class="chart-type-card" onclick="selectChartType('modeling_reserve', this)">
+                    <h3>Моделирование резерва</h3>
+                    <p>Прогнозные данные резерва</p>
+                </div>
+            </div>
+            <div class="navigation-buttons">
+                <button class="btn-secondary" onclick="goToStep(1)">Назад</button>
+                <button onclick="goToStep(3)" id="step2-next" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Шаг 3: Выбор данных -->
+        <div class="step-content" id="step3">
+            <h2>Шаг 3: Выберите строки с данными</h2>
+            
+            <div style="margin-bottom: var(--md-sys-spacing-4); padding: var(--md-sys-spacing-4); background: var(--md-sys-color-primary-container); border-radius: var(--md-sys-shape-corner-small); color: var(--md-sys-color-on-primary-container);">
+                <strong>Инструкция:</strong> Нажмите кнопку "Выбрать диапазон" для каждого типа данных, затем зажмите левую кнопку мыши на начальной ячейке и протяните до конечной ячейки в той же строке (как в Excel).
+                <span id="balanceHint" style="display: none;">
+                    Для баланса выберите две строки: <span style="color: #FF9500; font-weight: 500;">"Тепловая мощность нетто"</span> (оранжевый) и <span style="color: #34C759; font-weight: 500;">"Нагрузка существующих объектов"</span> (зеленый). Протяните диапазон ячеек в каждой строке.
+                </span>
+                <span id="reserveHint" style="display: none;">
+                    Для резерва выберите строку: <span style="color: var(--md-sys-color-primary); font-weight: 500;">"Резерв"</span> (синий). Протяните диапазон ячеек в строке.
+                </span>
+            </div>
+            
+            <div class="excel-viewer" id="excelViewer"></div>
+
+            <div class="quick-select" id="quickSelectButtons"></div>
+
+            <div id="dataSelectionFields"></div>
+
+            <div style="margin-top: 20px;">
+                <label for="chartName">Название графика:</label>
+                <input type="text" id="chartName" placeholder="Например: ЛОС - Баланс">
+                
+                <label for="chartId">ID графика (для URL):</label>
+                <input type="text" id="chartId" placeholder="Например: balancelos_new" oninput="validateChartId()">
+                <div id="chartIdHint" style="margin-top: var(--md-sys-spacing-1); font-size: var(--md-sys-typescale-body-small-size); color: var(--md-sys-color-on-surface-variant); display: none;">
+                    <strong>Важно:</strong> ID должен точно совпадать с путем графика (без начального слэша). Например, для пути <code>/balancelos_new</code> введите <code>balancelos_new</code>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <div class="section-title">Цвета графика:</div>
+                <div class="color-group">
+                    <label>Основной цвет:</label>
+                    <input type="color" id="primaryColor" value="#FF9500">
+                </div>
+                <div class="color-group" id="secondaryColorGroup">
+                    <label>Вторичный цвет:</label>
+                    <input type="color" id="secondaryColor" value="#34C759">
+                </div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button class="btn-secondary" onclick="goToStep(2)">Назад</button>
+                <button class="btn-primary" onclick="generateChart()" id="step3-next" disabled>Создать график</button>
+            </div>
+        </div>
+
+        <!-- Шаг 4: Настройки графика -->
+        <div class="step-content" id="step4">
+            <h2>Шаг 4: Настройка графика</h2>
+            
+            <div id="chartConfigPanel" style="display: none;">
+                <div style="display: flex; gap: var(--md-sys-spacing-5); margin-top: var(--md-sys-spacing-5);">
+                    <!-- Панель управления -->
+                    <div style="width: 400px; background: var(--md-sys-color-surface); padding: var(--md-sys-spacing-5); border-radius: var(--md-sys-shape-corner-medium); box-shadow: var(--md-sys-elevation-level2); overflow-y: auto; max-height: calc(100vh - 200px);">
+                        <div style="display: flex; justify-content: space-between; alignItems: center; margin-bottom: var(--md-sys-spacing-5);">
+                            <h3 style="margin: 0; font-size: var(--md-sys-typescale-title-large-size); font-weight: 400; color: var(--md-sys-color-on-surface);">Настройки графика</h3>
+                            <button onclick="saveChartConfigToStorage()" style="padding: var(--md-sys-spacing-2) var(--md-sys-spacing-4); background: var(--md-sys-color-success); color: var(--md-sys-color-on-success); border: none; border-radius: var(--md-sys-shape-corner-small); cursor: pointer; font-weight: 500; font-size: var(--md-sys-typescale-label-large-size);">
+                                💾 Сохранить
+                            </button>
+                        </div>
+                        
+                        <div id="savedConfigIndicator" style="display: none; padding: var(--md-sys-spacing-2) var(--md-sys-spacing-3); background: var(--md-sys-color-success-container); border-radius: var(--md-sys-shape-corner-small); margin-bottom: var(--md-sys-spacing-4); font-size: var(--md-sys-typescale-body-small-size); color: var(--md-sys-color-on-success-container);">
+                            ✓ Конфигурация сохранена
+                        </div>
+                        
+                        <!-- Переключатель разрешений -->
+                        <div style="margin-bottom: var(--md-sys-spacing-5);">
+                            <label style="display: block; margin-bottom: var(--md-sys-spacing-2); font-weight: 500; color: var(--md-sys-color-on-surface); font-size: var(--md-sys-typescale-label-large-size);">Разрешение:</label>
+                            <div style="display: flex; gap: var(--md-sys-spacing-2);">
+                                <button onclick="switchResolution('276x155')" id="resBtn276" style="padding: var(--md-sys-spacing-2) var(--md-sys-spacing-4); background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); border: none; border-radius: var(--md-sys-shape-corner-small); cursor: pointer; font-weight: 500; font-size: var(--md-sys-typescale-label-large-size);">
+                                    276x155
+                                </button>
+                                <button onclick="switchResolution('344x193')" id="resBtn344" style="padding: var(--md-sys-spacing-2) var(--md-sys-spacing-4); background: var(--md-sys-color-surface-container-highest); color: var(--md-sys-color-on-surface); border: none; border-radius: var(--md-sys-shape-corner-small); cursor: pointer; font-weight: 500; font-size: var(--md-sys-typescale-label-large-size);">
+                                    344x193
+                                </button>
+                                <button onclick="switchResolution('900x250')" id="resBtn900" style="padding: var(--md-sys-spacing-2) var(--md-sys-spacing-4); background: var(--md-sys-color-surface-container-highest); color: var(--md-sys-color-on-surface); border: none; border-radius: var(--md-sys-shape-corner-small); cursor: pointer; font-weight: 500; font-size: var(--md-sys-typescale-label-large-size);">
+                                    900x250
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Все слайдеры настроек будут добавлены через JavaScript -->
+                        <div id="configControls"></div>
+                    </div>
+                    
+                    <!-- График и JSON -->
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: var(--md-sys-spacing-5);">
+                        <!-- График -->
+                        <div style="background: var(--md-sys-color-surface); border-radius: var(--md-sys-shape-corner-medium); padding: var(--md-sys-spacing-5); box-shadow: var(--md-sys-elevation-level2); display: flex; flex-direction: column; alignItems: center;">
+                            <div id="chartContainer" style="width: 276px; height: 155px; border: 2px solid var(--md-sys-color-outline-variant); border-radius: var(--md-sys-shape-corner-extra-small); padding: 0; box-sizing: border-box; background: var(--md-sys-color-surface-container); overflow: hidden; display: flex; alignItems: center; justifyContent: center;">
+                                <div id="chartWrapper" style="background: var(--md-sys-color-surface); padding: 2px 0 7px 0; box-shadow: var(--md-sys-elevation-level1); display: flex; flex-direction: column; width: 100%; max-width: 100%; box-sizing: border-box; height: 100%;">
+                                    <div id="googleChart" style="width: 100%; height: 120px; position: relative;"></div>
+                                    <div id="customLegend" style="display: flex; flex-direction: column; alignItems: flex-start; gap: 2px; padding: 0; width: 100%; box-sizing: border-box;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- JSON конфигурация -->
+                        <div style="background: var(--md-sys-color-surface); border-radius: var(--md-sys-shape-corner-medium); padding: var(--md-sys-spacing-5); box-shadow: var(--md-sys-elevation-level2);">
+                            <div style="display: flex; justify-content: space-between; alignItems: center; margin-bottom: 10px;">
+                                <h3 style="margin: 0;">JSON конфигурация (<span id="currentResolutionLabel">276x155</span>):</h3>
+                                <div style="display: flex; gap: 8px;">
+                                    <button onclick="copyCurrentJson()" style="padding: var(--md-sys-spacing-1) var(--md-sys-spacing-3); background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); border: none; border-radius: var(--md-sys-shape-corner-extra-small); cursor: pointer; font-size: var(--md-sys-typescale-body-small-size); font-weight: 500;">
+                                        Копировать текущий
+                                    </button>
+                                    <button onclick="copyAllResolutionsJson()" style="padding: var(--md-sys-spacing-1) var(--md-sys-spacing-3); background: var(--md-sys-color-success); color: var(--md-sys-color-on-success); border: none; border-radius: var(--md-sys-shape-corner-extra-small); cursor: pointer; font-size: var(--md-sys-typescale-body-small-size); font-weight: 500;">
+                                        Копировать все 3 разрешения
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="jsonError" style="display: none; padding: var(--md-sys-spacing-2) var(--md-sys-spacing-3); background: var(--md-sys-color-error-container); border-radius: var(--md-sys-shape-corner-extra-small); margin-bottom: var(--md-sys-spacing-2); font-size: var(--md-sys-typescale-body-small-size); color: var(--md-sys-color-on-error-container);"></div>
+                            <textarea id="jsonConfig" style="width: 100%; height: 300px; font-family: 'Roboto Mono', monospace; font-size: var(--md-sys-typescale-body-small-size); padding: var(--md-sys-spacing-3); border: 1px solid var(--md-sys-color-outline); border-radius: var(--md-sys-shape-corner-extra-small); resize: vertical; background: var(--md-sys-color-surface); color: var(--md-sys-color-on-surface);"></textarea>
+                            <p style="font-size: var(--md-sys-typescale-body-small-size); color: var(--md-sys-color-on-surface-variant); margin-top: var(--md-sys-spacing-2);">
+                                Редактируйте JSON напрямую. Изменения применяются автоматически при валидном JSON.
+                                <br />
+                                <strong>Совет:</strong> Вставьте JSON с тремя разрешениями (с ключами "276x155", "344x193", "900x250") - все конфигурации применятся автоматически!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="results" class="results" style="display: none;">
+                <h3>✅ График успешно создан!</h3>
+                <p><strong>Файл данных:</strong> <span id="dataFile"></span></p>
+                <p><strong>Компонент:</strong> <span id="componentFile"></span></p>
+                <p style="margin-top: 15px;"><strong>Следующие шаги:</strong></p>
+                <ol style="margin-left: 20px; margin-top: 10px;">
+                    <li>Добавьте маршрут в <code>src/App.tsx</code></li>
+                    <li>Добавьте запись в <code>src/components/ChartDataMapper.ts</code></li>
+                    <li>Пересоберите проект: <code>npm run build</code></li>
+                </ol>
+            </div>
+            
+            <div class="navigation-buttons" style="margin-top: 20px;">
+                <button class="btn-secondary" onclick="location.reload()">Создать еще график</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+        // Загружаем Google Charts
+        google.charts.load('current', { 'packages': ['corechart'] });
+        google.charts.setOnLoadCallback(() => {
+            console.log('Google Charts loaded');
+        });
+    </script>
+    <script>
+        const API_URL = window.location.origin.includes('localhost') 
+            ? 'http://localhost:3001/api' 
+            : '/api';
+
+        let uploadedFile = null;
+        let excelData = null;
+        let currentStep = 1;
+        let selectedPlant = null;
+        let selectedChartType = null;
+        let selectedRows = {
+            totalNet: null,
+            load: null,
+            reserve: null
+        };
+        
+        // Данные созданного графика
+        let createdChartData = null;
+        let createdChartId = null;
+        let createdChartName = null;
+        let createdChartDataType = null;
+        let createdChartColors = { primary: '#FF9500', secondary: '#34C759' };
+        
+        // Конфигурации для трех разрешений (обновлены для соответствия вашим настройкам)
+        let config276 = {
+            resolution: "276x155",
+            customWidth: 276,
+            customHeight: 155,
+            chartAreaLeft: "8%",
+            chartAreaRight: "5%",
+            chartAreaTop: "-30%",
+            chartAreaBottom: 35,
+            chartAreaHeight: "98%",
+            chartAreaWidth: "90%",
+            baseFontSize: 9,
+            axisFontSize: 8,
+            legendFontSize: 8,
+            legendLeftPadding: "8%",
+            legendMarginTop: "-7px",
+            annotationStemLength: 5,
+            orangeAnnotationAbove: true,
+            greenAnnotationAbove: false,
+            vAxisMin: 1400,
+            vAxisMax: 2120,
+            vAxisGridlinesCount: 1,
+            containerPaddingTop: "1.4%",
+            chartContainerHeight: "125px",
+        };
+        
+        let config344 = {
+            resolution: "344x193",
+            customWidth: 344,
+            customHeight: 193,
+            chartAreaLeft: "5%",
+            chartAreaRight: "5%",
+            chartAreaTop: "-10%",
+            chartAreaBottom: 35,
+            chartAreaHeight: "98%",
+            chartAreaWidth: "94%",
+            baseFontSize: 10,
+            axisFontSize: 9,
+            legendFontSize: 10,
+            legendLeftPadding: "5%",
+            legendMarginTop: "0px",
+            annotationStemLength: 5,
+            orangeAnnotationAbove: true,
+            greenAnnotationAbove: false,
+            vAxisMin: 1470,
+            vAxisMax: 2120,
+            vAxisGridlinesCount: 1,
+            containerPaddingTop: "2px",
+            chartContainerHeight: "150px",
+        };
+        
+        let config900 = {
+            resolution: "900x250",
+            customWidth: 900,
+            customHeight: 250,
+            chartAreaLeft: "3%",
+            chartAreaRight: "3%",
+            chartAreaTop: "-25%",
+            chartAreaBottom: 20,
+            chartAreaHeight: "98%",
+            chartAreaWidth: "94%",
+            baseFontSize: 13,
+            axisFontSize: 12,
+            legendFontSize: 14,
+            legendLeftPadding: "3%",
+            legendMarginTop: "8px",
+            annotationStemLength: 7.5,
+            orangeAnnotationAbove: true,
+            greenAnnotationAbove: false,
+            vAxisMin: 1480,
+            vAxisMax: 2100,
+            vAxisGridlinesCount: 1,
+            containerPaddingTop: "0.4%",
+            chartContainerHeight: "188px",
+        };
+        
+        let currentResolution = "276x155";
+        let currentConfig = config276;
+
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            setTimeout(() => {
+                statusEl.className = 'status';
+            }, 5000);
+        }
+
+        function goToStep(step) {
+            // Скрываем все шаги
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.step').forEach(el => {
+                el.classList.remove('active', 'completed');
+            });
+
+            // Показываем нужный шаг
+            document.getElementById(`step${step}`).classList.add('active');
+            document.getElementById(`step${step}-indicator`).classList.add('active');
+
+            // Отмечаем предыдущие шаги как завершенные
+            for (let i = 1; i < step; i++) {
+                document.getElementById(`step${i}-indicator`).classList.add('completed');
+                const stepNum = document.getElementById(`step${i}-indicator`).querySelector('.step-number');
+                stepNum.textContent = '✓';
+            }
+
+            // Если переходим на шаг 3, отображаем таблицу (если еще не отображена)
+            if (step === 3 && excelData) {
+                const viewer = document.getElementById('excelViewer');
+                if (!viewer.innerHTML || viewer.innerHTML.trim() === '') {
+                    displayExcelTable(excelData, 3, 'excelViewer');
+                } else {
+                    // Обновляем обработчики для шага 3
+                    document.querySelectorAll('#excelViewer td').forEach(td => {
+                        const row = parseInt(td.getAttribute('data-row'));
+                        const col = parseInt(td.getAttribute('data-col'));
+                        if (!isNaN(row) && !isNaN(col)) {
+                            td.setAttribute('onmousedown', `selectCell(${row}, ${col}, event)`);
+                            td.style.cursor = currentSelectionMode ? 'crosshair' : 'default';
+                        }
+                    });
+                }
+                // Очищаем выбор при переходе на шаг 3, если тип графика изменился
+                // НО сохраняем выбранные строки для текущего типа графика
+                if (selectedChartType === 'balance' || selectedChartType === 'modeling_balance') {
+                    // Для баланса очищаем только reserve
+                    selectedRows.reserve = null;
+                } else if (selectedChartType === 'reserve' || selectedChartType === 'modeling_reserve') {
+                    // Для резерва очищаем только баланс, но сохраняем reserve если он был выбран
+                    selectedRows.totalNet = null;
+                    selectedRows.load = null;
+                }
+                updateDataSelectionFields();
+                setTimeout(() => {
+                    updateRowHighlighting();
+                }, 100);
+            }
+
+            currentStep = step;
+        }
+
+        function columnToIndex(col) {
+            let result = 0;
+            for (let i = 0; i < col.length; i++) {
+                result = result * 26 + (col.charCodeAt(i) - 'A'.charCodeAt(0) + 1);
+            }
+            return result - 1;
+        }
+
+        function indexToColumn(index) {
+            let result = '';
+            index++;
+            while (index > 0) {
+                index--;
+                result = String.fromCharCode(65 + (index % 26)) + result;
+                index = Math.floor(index / 26);
+            }
+            return result;
+        }
+
+        async function uploadExcel() {
+            const fileInput = document.getElementById('excelFile');
+            if (!fileInput.files[0]) {
+                return;
+            }
+
+            uploadedFile = fileInput.files[0];
+            showStatus('Загрузка файла...', 'info');
+
+            try {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const sheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[sheetName];
+                        excelData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+                        
+                        // Сразу показываем таблицу на шаге 1
+                        displayExcelTable(excelData, 1, 'excelViewerStep1');
+                        document.getElementById('excelViewerStep1').style.display = 'block';
+                        showStatus('Файл загружен. Кликните на ячейку с названием объекта', 'success');
+                    } catch (error) {
+                        showStatus('Ошибка при чтении файла: ' + error.message, 'error');
+                    }
+                };
+                reader.readAsArrayBuffer(uploadedFile);
+            } catch (error) {
+                showStatus('Ошибка: ' + error.message, 'error');
+            }
+        }
+
+        function displayExcelTable(data, step = currentStep, viewerId = 'excelViewer') {
+            const viewer = document.getElementById(viewerId);
+            if (!viewer) {
+                console.error('Viewer element not found:', viewerId);
+                return;
+            }
+            
+            let html = '<table><thead><tr><th class="row-header"></th>';
+            
+            const maxCols = Math.max(...data.map(row => row ? row.length : 0), 0);
+            for (let col = 0; col < Math.min(maxCols, 50); col++) {
+                html += `<th>${indexToColumn(col)}</th>`;
+            }
+            html += '</tr></thead><tbody>';
+
+            for (let row = 0; row < Math.min(data.length, 200); row++) {
+                html += `<tr data-row="${row}">`;
+                html += `<td class="row-header">${row + 1}</td>`;
+                for (let col = 0; col < Math.min(maxCols, 50); col++) {
+                    const cellValue = data[row] && data[row][col] !== undefined ? data[row][col] : '';
+                    const cellClass = getCellClass(row, col, data);
+                    // На шаге 1 используем selectObjectCell, на шаге 3 - selectCell
+                    const onClickFunc = step === 1 ? 'selectObjectCell' : 'selectCell';
+                    html += `<td class="${cellClass}" data-row="${row}" data-col="${col}" onmousedown="${onClickFunc}(${row}, ${col}, event)" title="Строка ${row + 1}, Колонка ${indexToColumn(col)}" style="cursor: ${step === 1 ? 'pointer' : (currentSelectionMode ? 'crosshair' : 'default')};">${cellValue}</td>`;
+                }
+                html += '</tr>';
+            }
+            html += '</tbody></table>';
+            viewer.innerHTML = html;
+            
+            // Обновляем выделение ячеек после отображения таблицы
+            if (step === 3) {
+                setTimeout(() => {
+                    updateCellHighlighting();
+                }, 100);
+            }
+        }
+
+        function selectObjectCell(row, col) {
+            // Убираем предыдущее выделение (в обоих таблицах)
+            document.querySelectorAll('#excelViewerStep1 .cell-selected, #excelViewer .cell-selected').forEach(cell => {
+                cell.classList.remove('cell-selected');
+            });
+
+            // Выделяем выбранную ячейку (ищем в обеих таблицах)
+            const cell = document.querySelector(`#excelViewerStep1 td[data-row="${row}"][data-col="${col}"]`) || 
+                        document.querySelector(`#excelViewer td[data-row="${row}"][data-col="${col}"]`);
+            
+            if (cell) {
+                cell.classList.add('cell-selected');
+                
+                // Получаем значение ячейки как название объекта
+                const cellValue = excelData[row] && excelData[row][col] ? excelData[row][col].toString().trim() : '';
+                
+                if (cellValue && cellValue.length > 0) {
+                    selectedPlant = {
+                        name: cellValue,
+                        row: row
+                    };
+                    
+                    // Показываем информацию о выбранном объекте
+                    const nameEl = document.getElementById('selectedObjectName');
+                    const rowEl = document.getElementById('selectedObjectRow');
+                    const infoEl = document.getElementById('selectedObjectInfo');
+                    
+                    if (nameEl) nameEl.textContent = cellValue;
+                    if (rowEl) rowEl.textContent = row + 1;
+                    if (infoEl) infoEl.style.display = 'block';
+                    
+                    // Активируем кнопку "Далее"
+                    const nextBtn = document.getElementById('step1-next');
+                    if (nextBtn) {
+                        nextBtn.disabled = false;
+                        nextBtn.style.opacity = '1';
+                    }
+                    
+                    showStatus(`Выбран объект: ${cellValue}`, 'success');
+                } else {
+                    showStatus('Выберите ячейку с названием объекта', 'error');
+                }
+            }
+        }
+
+        function getCellClass(row, col, data) {
+            const cellValue = data[row] && data[row][col] ? data[row][col].toString().toLowerCase() : '';
+            
+            if (cellValue.includes('наименование показателя') || cellValue.includes('объект')) {
+                return 'cell-label';
+            }
+            if (cellValue.includes('тепловая мощность') || cellValue.includes('нагрузка') || cellValue.includes('резерв')) {
+                return 'cell-label';
+            }
+            if (typeof data[row][col] === 'number') {
+                return 'cell-data';
+            }
+            return '';
+        }
+
+        function updateRowHighlighting() {
+            // Используем новую функцию выделения ячеек
+            updateCellHighlighting();
+        }
+        
+        // Предотвращаем контекстное меню при перетаскивании
+        document.addEventListener('contextmenu', (e) => {
+            if (isDragging) {
+                e.preventDefault();
+            }
+        });
+
+        // Храним выбранные ячейки для каждого типа данных
+        let selectedCells = {
+            totalNet: null, // {row, startCol, endCol}
+            load: null,     // {row, startCol, endCol}
+            reserve: null   // {row, startCol, endCol}
+        };
+        
+        let currentSelectionMode = null; // 'totalNet', 'load', 'reserve', или null
+        let isDragging = false;
+        let dragStartCell = null;
+        let dragEndCell = null;
+
+        function selectCell(row, col, event) {
+            const isBalance = selectedChartType === 'balance' || selectedChartType === 'modeling_balance';
+            const isReserve = selectedChartType === 'reserve' || selectedChartType === 'modeling_reserve';
+
+            if (!isBalance && !isReserve) {
+                showStatus('Сначала выберите тип графика на шаге 2', 'error');
+                return;
+            }
+
+            // Если есть активный режим выбора, начинаем перетаскивание
+            if (currentSelectionMode && event && event.type === 'mousedown') {
+                event.preventDefault();
+                isDragging = true;
+                dragStartCell = { row, col };
+                dragEndCell = { row, col };
+                
+                const cell = event.target;
+                cell.style.userSelect = 'none';
+                document.body.style.userSelect = 'none';
+                
+                let lastScrollTime = 0;
+                const scrollInterval = 50; // Интервал скролла в мс
+                
+                // Добавляем обработчики для перетаскивания
+                const handleMouseMove = (e) => {
+                    if (!isDragging) return;
+                    
+                    // Автоматический скролл при приближении к краям
+                    const now = Date.now();
+                    if (now - lastScrollTime > scrollInterval) {
+                        const viewer = document.getElementById('excelViewer');
+                        if (viewer) {
+                            const rect = viewer.getBoundingClientRect();
+                            const mouseY = e.clientY;
+                            const mouseX = e.clientX;
+                            const scrollSpeed = 10;
+                            
+                            // Скролл вверх
+                            if (mouseY < rect.top + 50) {
+                                viewer.scrollTop = Math.max(0, viewer.scrollTop - scrollSpeed);
+                            }
+                            // Скролл вниз
+                            if (mouseY > rect.bottom - 50) {
+                                viewer.scrollTop = Math.min(viewer.scrollHeight, viewer.scrollTop + scrollSpeed);
+                            }
+                            // Скролл влево
+                            if (mouseX < rect.left + 50) {
+                                viewer.scrollLeft = Math.max(0, viewer.scrollLeft - scrollSpeed);
+                            }
+                            // Скролл вправо
+                            if (mouseX > rect.right - 50) {
+                                viewer.scrollLeft = Math.min(viewer.scrollWidth, viewer.scrollLeft + scrollSpeed);
+                            }
+                        }
+                        lastScrollTime = now;
+                    }
+                    
+                    // Находим ячейку под курсором с учетом скролла
+                    const viewer = document.getElementById('excelViewer');
+                    if (!viewer) return;
+                    
+                    const viewerRect = viewer.getBoundingClientRect();
+                    const x = e.clientX - viewerRect.left + viewer.scrollLeft;
+                    const y = e.clientY - viewerRect.top + viewer.scrollTop;
+                    
+                    const target = document.elementFromPoint(e.clientX, e.clientY);
+                    const cellElement = target ? target.closest('td[data-row][data-col]') : null;
+                    
+                    if (cellElement) {
+                        const newRow = parseInt(cellElement.getAttribute('data-row'));
+                        const newCol = parseInt(cellElement.getAttribute('data-col'));
+                        
+                        // Обновляем только если в той же строке
+                        if (newRow === dragStartCell.row) {
+                            dragEndCell = { row: newRow, col: newCol };
+                            updateDragHighlighting();
+                        }
+                    }
+                };
+                
+                const handleMouseUp = (e) => {
+                    isDragging = false;
+                    document.body.style.userSelect = '';
+                    
+                    // Определяем диапазон
+                    if (dragStartCell && dragEndCell && dragStartCell.row === dragEndCell.row) {
+                        const startCol = Math.min(dragStartCell.col, dragEndCell.col);
+                        const endCol = Math.max(dragStartCell.col, dragEndCell.col);
+                        
+                        selectedCells[currentSelectionMode] = { 
+                            row: dragStartCell.row, 
+                            startCol, 
+                            endCol
+                        };
+                        selectedRows[currentSelectionMode] = dragStartCell.row;
+                        
+                        const modeNames = {
+                            totalNet: 'Тепловая мощность нетто (оранжевый)',
+                            load: 'Нагрузка существующих объектов (зеленый)',
+                            reserve: 'Резерв (синий)'
+                        };
+                        
+                        showStatus(`Выбран диапазон ${indexToColumn(startCol)}${dragStartCell.row + 1}-${indexToColumn(endCol)}${dragStartCell.row + 1} для ${modeNames[currentSelectionMode]}`, 'success');
+                        
+                        currentSelectionMode = null;
+                        dragStartCell = null;
+                        dragEndCell = null;
+                        
+                        updateDataSelectionFields();
+                        setTimeout(() => {
+                            updateCellHighlighting();
+                        }, 50);
+                    }
+                    
+                    // Удаляем обработчики
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                };
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+                
+                return;
+            }
+
+            // Если режим не активен, предлагаем выбрать тип данных
+            if (isBalance) {
+                if (!selectedCells.totalNet) {
+                    showStatus('Сначала нажмите кнопку "Выбрать диапазон" для "Тепловая мощность нетто"', 'info');
+                } else if (!selectedCells.load) {
+                    showStatus('Теперь нажмите кнопку "Выбрать диапазон" для "Нагрузка существующих объектов"', 'info');
+                } else {
+                    showStatus('Обе строки выбраны. Можете создать график или изменить выбор, нажав кнопки выше.', 'success');
+                }
+            } else if (isReserve) {
+                if (!selectedCells.reserve) {
+                    showStatus('Сначала нажмите кнопку "Выбрать диапазон" для "Резерв"', 'info');
+                } else {
+                    showStatus('Строка выбрана. Можете создать график или изменить выбор, нажав кнопку выше.', 'success');
+                }
+            }
+        }
+        
+        function startCellSelection(type) {
+            currentSelectionMode = type;
+            isDragging = false;
+            dragStartCell = null;
+            dragEndCell = null;
+            const modeNames = {
+                totalNet: 'Тепловая мощность нетто (оранжевый)',
+                load: 'Нагрузка существующих объектов (зеленый)',
+                reserve: 'Резерв (синий)'
+            };
+            showStatus(`Зажмите и протяните мышью диапазон ячеек в строке для ${modeNames[type]}`, 'info');
+        }
+        
+        function updateDragHighlighting() {
+            if (!dragStartCell || !dragEndCell || !currentSelectionMode) return;
+            
+            const viewer = document.getElementById('excelViewer');
+            if (!viewer) return;
+            
+            // Убираем предыдущие выделения перетаскивания
+            document.querySelectorAll('#excelViewer td').forEach(cell => {
+                cell.classList.remove('cell-dragging');
+            });
+            
+            // Выделяем диапазон только оранжевой рамкой (без фона)
+            if (dragStartCell.row === dragEndCell.row) {
+                const startCol = Math.min(dragStartCell.col, dragEndCell.col);
+                const endCol = Math.max(dragStartCell.col, dragEndCell.col);
+                
+                for (let col = startCol; col <= endCol; col++) {
+                    const cell = document.querySelector(`#excelViewer td[data-row="${dragStartCell.row}"][data-col="${col}"]`);
+                    if (cell) {
+                        cell.classList.add('cell-dragging');
+                    }
+                }
+            }
+        }
+        
+        function updateCellHighlighting() {
+            const viewer = document.getElementById('excelViewer');
+            if (!viewer || !viewer.innerHTML) {
+                return;
+            }
+            
+            // Убираем все выделения (кроме перетаскивания)
+            document.querySelectorAll('#excelViewer td').forEach(cell => {
+                cell.classList.remove('cell-selected', 'cell-selected-totalnet', 'cell-selected-load', 'cell-selected-reserve', 'cell-dragging');
+                cell.style.opacity = '';
+            });
+
+            // Выделяем выбранные диапазоны
+            if (selectedCells.totalNet) {
+                const cellData = selectedCells.totalNet;
+                for (let col = cellData.startCol; col <= cellData.endCol; col++) {
+                    const cell = document.querySelector(`#excelViewer td[data-row="${cellData.row}"][data-col="${col}"]`);
+                    if (cell) {
+                        cell.classList.add('cell-selected-totalnet');
+                    }
+                }
+            }
+
+            if (selectedCells.load) {
+                const cellData = selectedCells.load;
+                for (let col = cellData.startCol; col <= cellData.endCol; col++) {
+                    const cell = document.querySelector(`#excelViewer td[data-row="${cellData.row}"][data-col="${col}"]`);
+                    if (cell) {
+                        cell.classList.add('cell-selected-load');
+                    }
+                }
+            }
+
+            if (selectedCells.reserve) {
+                const cellData = selectedCells.reserve;
+                for (let col = cellData.startCol; col <= cellData.endCol; col++) {
+                    const cell = document.querySelector(`#excelViewer td[data-row="${cellData.row}"][data-col="${col}"]`);
+                    if (cell) {
+                        cell.classList.add('cell-selected-reserve');
+                    }
+                }
+            }
+            
+            // Обновляем курсор и режим выбора
+            if (currentSelectionMode) {
+                viewer.classList.add('selecting-mode');
+                document.querySelectorAll('#excelViewer td').forEach(cell => {
+                    cell.style.cursor = 'crosshair';
+                    cell.classList.add('selecting');
+                });
+            } else {
+                viewer.classList.remove('selecting-mode');
+                document.querySelectorAll('#excelViewer td').forEach(cell => {
+                    cell.style.cursor = 'default';
+                    cell.classList.remove('selecting');
+                });
+            }
+        }
+
+        function selectDataRow(type) {
+            // Проверяем совместимость типа данных с типом графика
+            const isBalance = selectedChartType === 'balance' || selectedChartType === 'modeling_balance';
+            const isReserve = selectedChartType === 'reserve' || selectedChartType === 'modeling_reserve';
+            
+            if ((type === 'totalNet' || type === 'load') && !isBalance) {
+                showStatus('Эти строки нужны только для графика баланса. Выберите тип графика "Баланс" на шаге 2.', 'error');
+                return;
+            }
+            
+            if (type === 'reserve' && !isReserve) {
+                showStatus('Строка резерва нужна только для графика резерва. Выберите тип графика "Резерв" на шаге 2.', 'error');
+                return;
+            }
+            
+            const labelCol = 2;
+            let found = false;
+            
+            for (let row = 0; row < excelData.length; row++) {
+                const labelValue = excelData[row] && excelData[row][labelCol] ? excelData[row][labelCol].toString().toLowerCase() : '';
+                
+                if (type === 'totalNet' && (labelValue.includes('тепловая мощность нетто') || labelValue.includes('проектная производительность'))) {
+                    selectCell(row, labelCol);
+                    found = true;
+                    break;
+                } else if (type === 'load' && labelValue.includes('нагрузка существующих объектов')) {
+                    selectCell(row, labelCol);
+                    found = true;
+                    break;
+                } else if (type === 'reserve' && labelValue.includes('резерв')) {
+                    selectCell(row, labelCol);
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found) {
+                const typeName = type === 'totalNet' ? 'Тепловая мощность нетто' : (type === 'load' ? 'Нагрузка существующих объектов' : 'Резерв');
+                showStatus(`Строка "${typeName}" не найдена автоматически. Выберите её вручную в таблице.`, 'info');
+            }
+        }
+
+        function clearSelection() {
+            // Убираем все выделения
+            document.querySelectorAll('#excelViewer td').forEach(cell => {
+                cell.classList.remove('cell-selected', 'cell-selected-totalnet', 'cell-selected-load', 'cell-selected-reserve', 'cell-dragging', 'selecting');
+                cell.style.opacity = '';
+                cell.style.cursor = '';
+            });
+            
+            // Очищаем только те ячейки, которые нужны для текущего типа графика
+            if (selectedChartType === 'balance' || selectedChartType === 'modeling_balance') {
+                selectedCells.totalNet = null;
+                selectedCells.load = null;
+                selectedRows.totalNet = null;
+                selectedRows.load = null;
+            } else if (selectedChartType === 'reserve' || selectedChartType === 'modeling_reserve') {
+                selectedCells.reserve = null;
+                selectedRows.reserve = null;
+            } else {
+                selectedCells = { totalNet: null, load: null, reserve: null };
+                selectedRows = { totalNet: null, load: null, reserve: null };
+            }
+            
+            currentSelectionMode = null;
+            isDragging = false;
+            dragStartCell = null;
+            dragEndCell = null;
+            updateDataSelectionFields();
+        }
+
+        function selectChartType(type, element) {
+            document.querySelectorAll('.chart-type-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedChartType = type;
+            document.getElementById('step2-next').disabled = false;
+        }
+
+        function updateDataSelectionFields() {
+            const fieldsDiv = document.getElementById('dataSelectionFields');
+            const secondaryColorGroup = document.getElementById('secondaryColorGroup');
+            const quickSelectDiv = document.getElementById('quickSelectButtons');
+            
+            let html = '';
+            let quickSelectHtml = '';
+            
+            // Обновляем подсказки
+            const balanceHint = document.getElementById('balanceHint');
+            const reserveHint = document.getElementById('reserveHint');
+            
+            if (selectedChartType === 'balance' || selectedChartType === 'modeling_balance') {
+                if (balanceHint) balanceHint.style.display = 'inline';
+                if (reserveHint) reserveHint.style.display = 'none';
+                
+                // Для баланса показываем кнопки для выбора диапазона
+                const totalNetInfo = selectedCells.totalNet 
+                    ? `Строка ${selectedCells.totalNet.row + 1}, диапазон ${indexToColumn(selectedCells.totalNet.startCol)}-${indexToColumn(selectedCells.totalNet.endCol)}`
+                    : 'Не выбрана';
+                const loadInfo = selectedCells.load
+                    ? `Строка ${selectedCells.load.row + 1}, диапазон ${indexToColumn(selectedCells.load.startCol)}-${indexToColumn(selectedCells.load.endCol)}`
+                    : 'Не выбрана';
+                
+                quickSelectHtml = `
+                    <button onclick="startCellSelection('totalNet')" style="background: var(--md-sys-color-success); color: var(--md-sys-color-on-success);">
+                        ${selectedCells.totalNet ? `✓ ${totalNetInfo}` : 'Выбрать диапазон "Тепловая мощность нетто" (оранжевый)'}
+                    </button>
+                    <button onclick="startCellSelection('load')" style="background: var(--md-sys-color-success); color: var(--md-sys-color-on-success);">
+                        ${selectedCells.load ? `✓ ${loadInfo}` : 'Выбрать диапазон "Нагрузка существующих объектов" (зеленый)'}
+                    </button>
+                    <button onclick="clearSelection()">Очистить выбор</button>
+                `;
+                
+                html += `<label>"Тепловая мощность нетто" <span style="color: #FF9500;">(оранжевый)</span>:</label>`;
+                html += `<div style="padding: 8px; background: #FFF3E0; border-radius: 4px; margin-bottom: 10px;">
+                    ${totalNetInfo}
+                </div>`;
+                html += `<label>"Нагрузка существующих объектов" <span style="color: #34C759;">(зеленый)</span>:</label>`;
+                html += `<div style="padding: var(--md-sys-spacing-2); background: var(--md-sys-color-success-container); border-radius: var(--md-sys-shape-corner-extra-small); margin-bottom: var(--md-sys-spacing-2); color: var(--md-sys-color-on-success-container);">
+                    ${loadInfo}
+                </div>`;
+                secondaryColorGroup.style.display = 'flex';
+                
+                // Очищаем резерв, если был выбран
+                selectedRows.reserve = null;
+                selectedCells.reserve = null;
+            } else if (selectedChartType === 'reserve' || selectedChartType === 'modeling_reserve') {
+                if (balanceHint) balanceHint.style.display = 'none';
+                if (reserveHint) reserveHint.style.display = 'inline';
+                
+                // Для резерва показываем кнопку для выбора диапазона
+                const reserveInfo = selectedCells.reserve
+                    ? `Строка ${selectedCells.reserve.row + 1}, диапазон ${indexToColumn(selectedCells.reserve.startCol)}-${indexToColumn(selectedCells.reserve.endCol)}`
+                    : 'Не выбрана';
+                
+                quickSelectHtml = `
+                    <button onclick="startCellSelection('reserve')" style="background: var(--md-sys-color-success); color: var(--md-sys-color-on-success);">
+                        ${selectedCells.reserve ? `✓ ${reserveInfo}` : 'Выбрать диапазон "Резерв" (синий)'}
+                    </button>
+                    <button onclick="clearSelection()">Очистить выбор</button>
+                `;
+                
+                html += `<label>"Резерв" <span style="color: var(--md-sys-color-primary);">(синий)</span>:</label>`;
+                html += `<div style="padding: var(--md-sys-spacing-2); background: var(--md-sys-color-primary-container); border-radius: var(--md-sys-shape-corner-extra-small); margin-bottom: var(--md-sys-spacing-2); color: var(--md-sys-color-on-primary-container);">
+                    ${reserveInfo}
+                </div>`;
+                secondaryColorGroup.style.display = 'none';
+                
+                // Очищаем баланс, если был выбран
+                selectedRows.totalNet = null;
+                selectedRows.load = null;
+                selectedCells.totalNet = null;
+                selectedCells.load = null;
+            } else {
+                if (balanceHint) balanceHint.style.display = 'none';
+                if (reserveHint) reserveHint.style.display = 'none';
+                
+                // Если тип графика не выбран
+                quickSelectHtml = `<p style="color: var(--md-sys-color-on-surface-variant);">Сначала выберите тип графика на шаге 2</p>`;
+                html = '';
+            }
+            
+            fieldsDiv.innerHTML = html;
+            if (quickSelectDiv) {
+                quickSelectDiv.innerHTML = quickSelectHtml;
+            }
+            
+            // Проверяем, можно ли перейти к созданию (используем selectedCells)
+            const canProceed = (selectedChartType === 'balance' || selectedChartType === 'modeling_balance') 
+                ? (selectedCells.totalNet !== null && selectedCells.load !== null)
+                : ((selectedChartType === 'reserve' || selectedChartType === 'modeling_reserve') && selectedCells.reserve !== null);
+            
+            const step3NextBtn = document.getElementById('step3-next');
+            if (step3NextBtn) {
+                step3NextBtn.disabled = !canProceed;
+            }
+            
+            // Обновляем визуальное выделение строк после обновления DOM
+            setTimeout(() => {
+                updateCellHighlighting();
+            }, 100);
+        }
+
+        async function generateChart() {
+            if (!selectedPlant || !selectedChartType) {
+                showStatus('Заполните все поля', 'error');
+                return;
+            }
+
+            const chartName = document.getElementById('chartName').value;
+            const chartId = document.getElementById('chartId').value;
+
+            if (!chartName || !chartId) {
+                showStatus('Заполните название и ID графика', 'error');
+                return;
+            }
+
+            // Определяем тип данных и часть
+            let dataType = 'balance';
+            let part = 1;
+            
+            if (selectedChartType === 'balance') {
+                dataType = 'balance';
+                part = 1;
+            } else if (selectedChartType === 'reserve') {
+                dataType = 'reserve';
+                part = 1;
+            } else if (selectedChartType === 'modeling_balance') {
+                dataType = 'balance';
+                part = 2;
+            } else if (selectedChartType === 'modeling_reserve') {
+                dataType = 'reserve';
+                part = 2;
+            }
+
+            const primaryColor = document.getElementById('primaryColor').value;
+            const secondaryColor = document.getElementById('secondaryColor').value;
+
+            // Определяем колонки в зависимости от части
+            const startCol = part === 2 ? 'Z' : 'D';
+            const endCol = part === 2 ? 'AV' : 'M';
+
+            showStatus('Генерация графика...', 'info');
+
+            const formData = new FormData();
+            formData.append('file', uploadedFile);
+            formData.append('config', JSON.stringify({
+                chartId,
+                chartName,
+                plantName: selectedPlant.name,
+                dataType,
+                part,
+                colors: {
+                    primary: primaryColor,
+                    secondary: secondaryColor
+                },
+                selection: {
+                    plantRow: selectedPlant.row,
+                    totalNetRow: selectedCells.totalNet ? selectedCells.totalNet.row : null,
+                    totalNetStartCol: selectedCells.totalNet && selectedCells.totalNet.startCol !== undefined ? selectedCells.totalNet.startCol : null,
+                    totalNetEndCol: selectedCells.totalNet && selectedCells.totalNet.endCol !== undefined ? selectedCells.totalNet.endCol : null,
+                    loadRow: selectedCells.load ? selectedCells.load.row : null,
+                    loadStartCol: selectedCells.load && selectedCells.load.startCol !== undefined ? selectedCells.load.startCol : null,
+                    loadEndCol: selectedCells.load && selectedCells.load.endCol !== undefined ? selectedCells.load.endCol : null,
+                    reserveRow: selectedCells.reserve ? selectedCells.reserve.row : null,
+                    reserveStartCol: selectedCells.reserve && selectedCells.reserve.startCol !== undefined ? selectedCells.reserve.startCol : null,
+                    reserveEndCol: selectedCells.reserve && selectedCells.reserve.endCol !== undefined ? selectedCells.reserve.endCol : null,
+                    labelCol: 'C',
+                    startCol,
+                    endCol,
+                    // Для обратной совместимости также отправляем row
+                    totalNet: selectedCells.totalNet ? selectedCells.totalNet.row : null,
+                    load: selectedCells.load ? selectedCells.load.row : null,
+                    reserve: selectedCells.reserve ? selectedCells.reserve.row : null
+                },
+                years: [2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032, 2033, 2034, 2035]
+            }));
+
+            try {
+                const response = await fetch(`${API_URL}/generate-chart`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Server error response:', errorText);
+                    showStatus('Ошибка сервера: ' + errorText, 'error');
+                    return;
+                }
+                
+                const result = await response.json();
+                
+                console.log('=== SERVER RESPONSE ===');
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                console.log('Full result:', result);
+                console.log('Result type:', typeof result);
+                console.log('Result keys:', Object.keys(result || {}));
+                console.log('Result.success:', result.success);
+                console.log('Result.chartData:', result.chartData);
+                console.log('Result.chartData type:', typeof result.chartData);
+                console.log('Result.dataType:', result.dataType);
+                console.log('Result.chartName:', result.chartName);
+                console.log('Result stringified:', JSON.stringify(result, null, 2));
+
+                if (result.success) {
+                    document.getElementById('dataFile').textContent = result.dataFile;
+                    document.getElementById('componentFile').textContent = result.componentFile;
+                    
+                    // Сохраняем данные для панели настроек
+                    // Убеждаемся, что ID не содержит начальный слэш
+                    createdChartId = chartId.startsWith('/') ? chartId.substring(1) : chartId;
+                    createdChartName = result.chartName || chartName;
+                    createdChartDataType = result.dataType || dataType;
+                    createdChartColors = { primary: primaryColor, secondary: secondaryColor };
+                    createdChartData = result.chartData;
+                    
+                    console.log(`✓ График создан с ID: ${createdChartId}`);
+                    console.log(`  Конфигурации будут сохраняться с ключом: chart_config_${createdChartId}_<разрешение>`);
+                    
+                    // Если данных нет в result.chartData, но есть в других полях, попробуем восстановить
+                    if (!createdChartData && result.dataFile) {
+                        console.warn('⚠️ chartData отсутствует в ответе, пытаемся восстановить из других полей');
+                        // Попробуем получить данные из файла или использовать дефолтные
+                        createdChartData = {
+                            years: [2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032, 2033, 2034, 2035],
+                            totalNet: null,
+                            load: null,
+                            reserve: null
+                        };
+                    }
+                    
+                    console.log('=== CHART CREATED ===');
+                    console.log('Chart ID:', createdChartId);
+                    console.log('Chart Name:', createdChartName);
+                    console.log('Data Type:', createdChartDataType);
+                    console.log('Colors:', createdChartColors);
+                    console.log('Chart Data from server:', result.chartData);
+                    console.log('Chart Data saved:', createdChartData);
+                    console.log('Has years:', !!(createdChartData && createdChartData.years));
+                    console.log('Has totalNet:', !!(createdChartData && createdChartData.totalNet));
+                    console.log('Has load:', !!(createdChartData && createdChartData.load));
+                    console.log('Has reserve:', !!(createdChartData && createdChartData.reserve));
+                    if (createdChartData) {
+                        console.log('Years:', createdChartData.years);
+                        console.log('TotalNet:', createdChartData.totalNet);
+                        console.log('Load:', createdChartData.load);
+                        console.log('Reserve:', createdChartData.reserve);
+                    }
+                    
+                    showStatus('График успешно создан!', 'success');
+                    goToStep(4);
+                    
+                    // Сразу скрываем блок результатов и показываем панель настроек
+                    const resultsDiv = document.getElementById('results');
+                    const panelDiv = document.getElementById('chartConfigPanel');
+                    
+                    if (resultsDiv) {
+                        resultsDiv.style.display = 'none';
+                        resultsDiv.classList.remove('show');
+                    }
+                    
+                    // Инициализируем панель настроек
+                    setTimeout(() => {
+                        console.log('Initializing chart config panel...');
+                        if (panelDiv) {
+                            panelDiv.style.display = 'block';
+                        }
+                        initializeChartConfigPanel();
+                    }, 100);
+                } else {
+                    showStatus('Ошибка: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showStatus('Ошибка при генерации графика: ' + error.message, 'error');
+            }
+        }
+
+        // Обновляем поля при изменении номеров строк
+        document.addEventListener('input', (e) => {
+            if (e.target.id === 'totalNetRow' || e.target.id === 'loadRow' || e.target.id === 'reserveRow') {
+                const rowNum = parseInt(e.target.value) - 1;
+                if (e.target.id === 'totalNetRow') selectedRows.totalNet = isNaN(rowNum) ? null : rowNum;
+                if (e.target.id === 'loadRow') selectedRows.load = isNaN(rowNum) ? null : rowNum;
+                if (e.target.id === 'reserveRow') selectedRows.reserve = isNaN(rowNum) ? null : rowNum;
+                updateDataSelectionFields();
+            }
+        });
+        
+        // ========== ФУНКЦИИ ДЛЯ ПАНЕЛИ НАСТРОЕК ГРАФИКА ==========
+        
+        function loadCreatedChartData(dataFileName, dataType) {
+            // Данные уже получены из сервера в result.chartData
+            return Promise.resolve();
+        }
+        
+        function initializeChartConfigPanel() {
+            console.log('=== INITIALIZE CHART CONFIG PANEL ===');
+            console.log('Has createdChartData:', !!createdChartData);
+            console.log('Has createdChartId:', !!createdChartId);
+            console.log('Created Chart Data:', createdChartData);
+            console.log('Created Chart ID:', createdChartId);
+            
+            if (!createdChartData || !createdChartId) {
+                console.error('❌ Нет данных для инициализации панели', {
+                    createdChartData,
+                    createdChartId,
+                    resultChartData: typeof result !== 'undefined' ? result.chartData : 'result not defined'
+                });
+                alert('Ошибка: Данные графика не получены. Проверьте консоль для деталей.');
+                return;
+            }
+            
+            console.log('✅ Данные есть, продолжаем инициализацию');
+            
+            const panel = document.getElementById('chartConfigPanel');
+            const results = document.getElementById('results');
+            
+            if (!panel) {
+                console.error('Элемент chartConfigPanel не найден');
+                return;
+            }
+            
+            // Показываем панель настроек и скрываем результаты
+            panel.style.display = 'block';
+            if (results) {
+                results.style.display = 'none';
+                results.classList.remove('show');
+            }
+            
+            console.log('Panel displayed, results hidden');
+            
+            // Загружаем сохраненные конфигурации
+            loadSavedConfigs();
+            
+            // Обновляем размеры контейнера
+            const container = document.getElementById('chartContainer');
+            if (container) {
+                container.style.width = currentConfig.customWidth + 'px';
+                container.style.height = currentConfig.customHeight + 'px';
+            }
+            
+            // Обновляем высоту графика
+            const chartWrapper = document.getElementById('chartWrapper');
+            if (chartWrapper) {
+                chartWrapper.style.paddingTop = currentConfig.containerPaddingTop;
+            }
+            
+            const googleChartDiv = document.getElementById('googleChart');
+            if (googleChartDiv) {
+                googleChartDiv.style.height = currentConfig.chartContainerHeight;
+            }
+            
+            // Создаем все слайдеры
+            createConfigControls();
+            
+            // Инициализируем график (ждем загрузки Google Charts)
+            const initChart = () => {
+                if (google && google.charts && google.visualization) {
+                    console.log('Google Charts loaded, updating chart');
+                    updateChart();
+                } else {
+                    console.log('Google Charts not loaded yet, waiting...');
+                    setTimeout(initChart, 200);
+                }
+            };
+            initChart();
+            
+            // Обновляем JSON
+            updateJsonConfig();
+            
+            // Проверяем сохраненную конфигурацию
+            checkSavedConfig();
+        }
+        
+        function loadSavedConfigs() {
+            const key276 = `chart_config_${createdChartId}_276x155`;
+            const key344 = `chart_config_${createdChartId}_344x193`;
+            const key900 = `chart_config_${createdChartId}_900x250`;
+            
+            try {
+                const saved276 = localStorage.getItem(key276);
+                if (saved276) {
+                    const parsed = JSON.parse(saved276);
+                    if (parsed.config) {
+                        config276 = { ...config276, ...parsed.config };
+                    }
+                }
+                
+                const saved344 = localStorage.getItem(key344);
+                if (saved344) {
+                    const parsed = JSON.parse(saved344);
+                    if (parsed.config) {
+                        config344 = { ...config344, ...parsed.config };
+                    }
+                }
+                
+                const saved900 = localStorage.getItem(key900);
+                if (saved900) {
+                    const parsed = JSON.parse(saved900);
+                    if (parsed.config) {
+                        config900 = { ...config900, ...parsed.config };
+                    }
+                }
+            } catch (e) {
+                console.error('Ошибка загрузки сохраненных конфигураций:', e);
+            }
+            
+            // Устанавливаем текущую конфигурацию
+            currentConfig = currentResolution === "276x155" ? config276 : (currentResolution === "344x193" ? config344 : config900);
+        }
+        
+        function switchResolution(resolution) {
+            currentResolution = resolution;
+            currentConfig = resolution === "276x155" ? config276 : (resolution === "344x193" ? config344 : config900);
+            
+            // Обновляем кнопки
+            document.getElementById('resBtn276').style.background = resolution === "276x155" ? "var(--md-sys-color-primary)" : "var(--md-sys-color-surface-container-highest)";
+            document.getElementById('resBtn276').style.color = resolution === "276x155" ? "var(--md-sys-color-on-primary)" : "var(--md-sys-color-on-surface)";
+            document.getElementById('resBtn344').style.background = resolution === "344x193" ? "var(--md-sys-color-primary)" : "var(--md-sys-color-surface-container-highest)";
+            document.getElementById('resBtn344').style.color = resolution === "344x193" ? "var(--md-sys-color-on-primary)" : "var(--md-sys-color-on-surface)";
+            document.getElementById('resBtn900').style.background = resolution === "900x250" ? "var(--md-sys-color-primary)" : "var(--md-sys-color-surface-container-highest)";
+            document.getElementById('resBtn900').style.color = resolution === "900x250" ? "var(--md-sys-color-on-primary)" : "var(--md-sys-color-on-surface)";
+            
+            document.getElementById('currentResolutionLabel').textContent = resolution;
+            
+            // Обновляем размеры контейнера
+            const container = document.getElementById('chartContainer');
+            container.style.width = currentConfig.customWidth + 'px';
+            container.style.height = currentConfig.customHeight + 'px';
+            
+            // Обновляем слайдеры
+            updateConfigControls();
+            
+            // Обновляем график
+            updateChart();
+            
+            // Обновляем JSON
+            updateJsonConfig();
+            
+            // Проверяем сохраненную конфигурацию
+            checkSavedConfig();
+        }
+        
+        function checkSavedConfig() {
+            const key = `chart_config_${createdChartId}_${currentResolution}`;
+            const saved = localStorage.getItem(key);
+            const indicator = document.getElementById('savedConfigIndicator');
+            if (saved) {
+                indicator.style.display = 'block';
+            } else {
+                indicator.style.display = 'none';
+            }
+        }
+        
+        function updateConfig(updates) {
+            if (currentResolution === "276x155") {
+                config276 = { ...config276, ...updates };
+                currentConfig = config276;
+            } else if (currentResolution === "344x193") {
+                config344 = { ...config344, ...updates };
+                currentConfig = config344;
+            } else {
+                config900 = { ...config900, ...updates };
+                currentConfig = config900;
+            }
+            
+            // Обновляем слайдеры
+            updateConfigControls();
+            
+            // Обновляем график
+            updateChart();
+            
+            // Обновляем JSON
+            updateJsonConfig();
+        }
+        
+        function createConfigControls() {
+            const controlsDiv = document.getElementById('configControls');
+            let html = '';
+            
+            // Ширина контейнера
+            html += createSlider('customWidth', 'Ширина контейнера (шаг по горизонтали)', currentConfig.customWidth, 200, 800, 1, 'px');
+            
+            // Высота контейнера
+            html += createSlider('customHeight', 'Высота контейнера (шаг по вертикали)', currentConfig.customHeight, 100, 400, 1, 'px');
+            
+            // Высота графика
+            html += createSlider('chartContainerHeight', 'Высота графика', parseInt(currentConfig.chartContainerHeight) || 120, 80, 200, 1, 'px', true);
+            
+            // Chart Area - Left
+            html += createSlider('chartAreaLeft', 'Chart Area Left', parseFloat(currentConfig.chartAreaLeft) || 0, 0, 20, 0.1, '%', true);
+            
+            // Chart Area - Right
+            html += createSlider('chartAreaRight', 'Chart Area Right', parseFloat(currentConfig.chartAreaRight) || 0, 0, 20, 0.1, '%', true);
+            
+            // Chart Area - Top
+            html += createSlider('chartAreaTop', 'Chart Area Top', parseFloat(currentConfig.chartAreaTop) || 0, -30, 30, 0.1, '%', true);
+            
+            // Chart Area - Bottom
+            html += createSlider('chartAreaBottom', 'Chart Area Bottom', currentConfig.chartAreaBottom || 35, 10, 60, 1, 'px');
+            
+            // Chart Area - Height
+            html += createSlider('chartAreaHeight', 'Chart Area Height', parseFloat(currentConfig.chartAreaHeight) || 98, 70, 100, 0.1, '%', true);
+            
+            // vAxis Min
+            const minValue = getMinValue();
+            const maxValue = getMaxValue();
+            html += createSlider('vAxisMin', 'vAxis Min (шаг по вертикали)', currentConfig.vAxisMin || 0, Math.floor(minValue / 100) * 100 - 200, Math.ceil(maxValue / 100) * 100, 10, '');
+            
+            // vAxis Max
+            html += createSlider('vAxisMax', 'vAxis Max (шаг по вертикали)', currentConfig.vAxisMax || 910, Math.floor(minValue / 100) * 100, Math.ceil(maxValue / 100) * 100 + 200, 10, '');
+            
+            // vAxis Gridlines Count
+            html += createSlider('vAxisGridlinesCount', 'vAxis Gridlines Count', currentConfig.vAxisGridlinesCount || 1, 1, 10, 1, '');
+            
+            // Legend Left Padding
+            html += createSlider('legendLeftPadding', 'Legend Left Padding', parseFloat(currentConfig.legendLeftPadding) || 0, 0, 20, 0.1, '%', true);
+            
+            // Legend Margin Top
+            html += createSlider('legendMarginTop', 'Legend Margin Top', parseFloat(currentConfig.legendMarginTop) || 0, -20, 20, 1, 'px', true);
+            
+            // Container Padding Top
+            html += createSlider('containerPaddingTop', 'Container Padding Top', parseFloat(currentConfig.containerPaddingTop) || 0, 0, 30, 0.1, '%', true);
+            
+            // Annotation Stem Length
+            html += createSlider('annotationStemLength', 'Annotation Stem Length', currentConfig.annotationStemLength || 5, 1, 20, 0.5, '');
+            
+            // Orange Annotation Position
+            html += `<div style="margin-bottom: var(--md-sys-spacing-4);">
+                <label style="display: flex; alignItems: center; gap: var(--md-sys-spacing-2); color: var(--md-sys-color-on-surface);">
+                    <input type="checkbox" id="orangeAnnotationAbove" ${currentConfig.orangeAnnotationAbove ? 'checked' : ''} onchange="updateConfig({orangeAnnotationAbove: this.checked})" style="accent-color: var(--md-sys-color-primary);">
+                    <span>Оранжевый график: <span id="orangeAnnotationLabel">${currentConfig.orangeAnnotationAbove ? 'над точкой' : 'под точкой'}</span></span>
+                </label>
+            </div>`;
+            
+            // Green Annotation Position
+            html += `<div style="margin-bottom: var(--md-sys-spacing-4);">
+                <label style="display: flex; alignItems: center; gap: var(--md-sys-spacing-2); color: var(--md-sys-color-on-surface);">
+                    <input type="checkbox" id="greenAnnotationAbove" ${currentConfig.greenAnnotationAbove ? 'checked' : ''} onchange="updateConfig({greenAnnotationAbove: this.checked})" style="accent-color: var(--md-sys-color-primary);">
+                    <span>Зеленый график: <span id="greenAnnotationLabel">${currentConfig.greenAnnotationAbove ? 'над точкой' : 'под точкой'}</span></span>
+                </label>
+            </div>`;
+            
+            // Font Sizes
+            html += createSlider('baseFontSize', 'Base Font Size', currentConfig.baseFontSize || 9, 6, 16, 0.5, 'px');
+            html += createSlider('axisFontSize', 'Axis Font Size', currentConfig.axisFontSize || 8, 6, 16, 0.5, 'px');
+            html += createSlider('legendFontSize', 'Legend Font Size', currentConfig.legendFontSize || 8, 6, 16, 0.5, 'px');
+            
+            controlsDiv.innerHTML = html;
+            updateConfigControls();
+        }
+        
+        function createSlider(id, label, value, min, max, step, unit = '', isPercent = false) {
+            const displayValue = isPercent ? `${value}${unit}` : (unit ? `${value}${unit}` : value);
+            return `
+                <div style="margin-bottom: var(--md-sys-spacing-4);">
+                    <label style="display: block; margin-bottom: var(--md-sys-spacing-1); color: var(--md-sys-color-on-surface); font-size: var(--md-sys-typescale-label-large-size);">
+                        ${label}: ${displayValue}
+                    </label>
+                    <input
+                        type="range"
+                        id="slider_${id}"
+                        min="${min}"
+                        max="${max}"
+                        step="${step}"
+                        value="${value}"
+                        oninput="handleSliderChange('${id}', this.value, ${isPercent}, '${unit}')"
+                        style="width: 100%; accent-color: var(--md-sys-color-primary);"
+                    />
+                </div>
+            `;
+        }
+        
+        function handleSliderChange(id, value, isPercent, unit) {
+            const numValue = isPercent ? parseFloat(value) : (unit === 'px' ? parseInt(value) : parseFloat(value));
+            const updateValue = isPercent ? `${numValue}${unit}` : (unit === 'px' ? `${numValue}${unit}` : numValue);
+            
+            updateConfig({ [id]: updateValue });
+            
+            // Обновляем label
+            const label = document.querySelector(`#slider_${id}`).previousElementSibling;
+            if (label) {
+                const labelText = label.textContent.split(':')[0];
+                label.textContent = `${labelText}: ${isPercent ? updateValue : (unit ? updateValue : numValue)}`;
+            }
+            
+            // Обновляем чекбоксы для аннотаций
+            if (id === 'orangeAnnotationAbove') {
+                document.getElementById('orangeAnnotationLabel').textContent = value ? 'над точкой' : 'под точкой';
+            }
+            if (id === 'greenAnnotationAbove') {
+                document.getElementById('greenAnnotationLabel').textContent = value ? 'над точкой' : 'под точкой';
+            }
+        }
+        
+        function updateConfigControls() {
+            // Обновляем все слайдеры значениями из currentConfig
+            Object.keys(currentConfig).forEach(key => {
+                const slider = document.getElementById(`slider_${key}`);
+                if (slider) {
+                    if (key.includes('Left') || key.includes('Right') || key.includes('Top') || key.includes('Height') || key.includes('Width') || key.includes('Padding')) {
+                        const numValue = parseFloat(currentConfig[key]) || 0;
+                        slider.value = numValue;
+                        const label = slider.previousElementSibling;
+                        if (label) {
+                            const labelText = label.textContent.split(':')[0];
+                            label.textContent = `${labelText}: ${currentConfig[key]}`;
+                        }
+                    } else if (key === 'chartContainerHeight') {
+                        const numValue = parseInt(currentConfig[key]) || 120;
+                        slider.value = numValue;
+                        const label = slider.previousElementSibling;
+                        if (label) {
+                            const labelText = label.textContent.split(':')[0];
+                            label.textContent = `${labelText}: ${currentConfig[key]}`;
+                        }
+                    } else {
+                        slider.value = currentConfig[key];
+                        const label = slider.previousElementSibling;
+                        if (label) {
+                            const labelText = label.textContent.split(':')[0];
+                            label.textContent = `${labelText}: ${currentConfig[key]}${key.includes('FontSize') ? 'px' : ''}`;
+                        }
+                    }
+                }
+            });
+            
+            // Обновляем чекбоксы
+            const orangeCheckbox = document.getElementById('orangeAnnotationAbove');
+            const greenCheckbox = document.getElementById('greenAnnotationAbove');
+            if (orangeCheckbox) {
+                orangeCheckbox.checked = currentConfig.orangeAnnotationAbove;
+                const label = document.getElementById('orangeAnnotationLabel');
+                if (label) label.textContent = currentConfig.orangeAnnotationAbove ? 'над точкой' : 'под точкой';
+            }
+            if (greenCheckbox) {
+                greenCheckbox.checked = currentConfig.greenAnnotationAbove;
+                const label = document.getElementById('greenAnnotationLabel');
+                if (label) label.textContent = currentConfig.greenAnnotationAbove ? 'над точкой' : 'под точкой';
+            }
+        }
+        
+        function getMinValue() {
+            if (!createdChartData) return 0;
+            if (createdChartDataType === 'reserve') {
+                return Math.min(...(createdChartData.reserve || [0]));
+            }
+            const allValues = [...(createdChartData.totalNet || []), ...(createdChartData.load || [])];
+            return allValues.length > 0 ? Math.min(...allValues) : 0;
+        }
+        
+        function getMaxValue() {
+            if (!createdChartData) return 100;
+            if (createdChartDataType === 'reserve') {
+                return Math.max(...(createdChartData.reserve || [100]));
+            }
+            const allValues = [...(createdChartData.totalNet || []), ...(createdChartData.load || [])];
+            return allValues.length > 0 ? Math.max(...allValues) : 100;
+        }
+        
+        function updateChart() {
+            console.log('=== UPDATE CHART ===');
+            console.log('Has createdChartData:', !!createdChartData);
+            console.log('Has Google:', !!google);
+            console.log('Has Charts:', !!(google && google.charts));
+            console.log('Has Visualization:', !!(google && google.visualization));
+            console.log('Current Config:', currentConfig);
+            console.log('Created Chart Data:', createdChartData);
+            
+            if (!createdChartData) {
+                console.error('❌ Нет данных для графика');
+                alert('Ошибка: Данные графика отсутствуют. Проверьте, что данные были получены с сервера.');
+                return;
+            }
+            
+            console.log('✅ Данные есть, продолжаем отрисовку');
+            
+            if (!google || !google.charts || !google.visualization) {
+                console.error('Google Charts не загружен', {
+                    hasGoogle: !!google,
+                    hasCharts: !!(google && google.charts),
+                    hasVisualization: !!(google && google.visualization)
+                });
+                return;
+            }
+            
+            const chartElement = document.getElementById('googleChart');
+            if (!chartElement) {
+                console.error('Элемент googleChart не найден');
+                return;
+            }
+            
+            try {
+                const data = new google.visualization.DataTable();
+                
+                console.log('Creating data table for type:', createdChartDataType);
+                console.log('Years:', createdChartData.years);
+                console.log('TotalNet:', createdChartData.totalNet);
+                console.log('Load:', createdChartData.load);
+                console.log('Reserve:', createdChartData.reserve);
+                
+                if (createdChartDataType === 'reserve') {
+                    // График резерва
+                    data.addColumn('string', 'Год');
+                    data.addColumn('number', 'Резерв');
+                    data.addColumn({ type: 'string', role: 'annotation' });
+                    
+                    const years = createdChartData.years || [];
+                    const reserve = createdChartData.reserve || [];
+                    
+                    console.log('Reserve chart - years count:', years.length, 'reserve count:', reserve.length);
+                    
+                    if (years.length === 0 && reserve.length === 0) {
+                        console.warn('⚠️ Нет данных для графика резерва');
+                        // Добавляем заглушку
+                        for (let i = 0; i < 10; i++) {
+                            data.addRow([`${2025 + i}`, 0, '']);
+                        }
+                    } else {
+                        for (let i = 0; i < Math.max(years.length, reserve.length); i++) {
+                            let annotation = "";
+                            const reserveRounded = Math.round(reserve[i] || 0);
+                            const prevValue = i > 0 ? Math.round(reserve[i - 1] || 0) : null;
+                            const nextValue = i < reserve.length - 1 ? Math.round(reserve[i + 1] || 0) : null;
+                            
+                            if (prevValue === null || nextValue === null || reserveRounded !== prevValue || reserveRounded !== nextValue) {
+                                annotation = reserveRounded.toString();
+                            }
+                            
+                            data.addRow([years[i] || `${2025 + i}`, reserve[i] || 0, annotation]);
+                        }
+                    }
+                } else {
+                    // График баланса
+                    data.addColumn('string', 'Год');
+                    data.addColumn('number', 'Тепловая мощность нетто');
+                    data.addColumn({ type: 'string', role: 'annotation' });
+                    data.addColumn('number', 'Нагрузка');
+                    data.addColumn({ type: 'string', role: 'annotation' });
+                    
+                    const years = createdChartData.years || [];
+                    const totalNet = createdChartData.totalNet || [];
+                    const load = createdChartData.load || [];
+                    
+                    console.log('Balance chart - years count:', years.length, 'totalNet count:', totalNet.length, 'load count:', load.length);
+                    
+                    if (years.length === 0 && totalNet.length === 0 && load.length === 0) {
+                        console.warn('⚠️ Нет данных для графика баланса');
+                        // Добавляем заглушку
+                        for (let i = 0; i < 10; i++) {
+                            data.addRow([`${2025 + i}`, 0, '', 0, '']);
+                        }
+                    } else {
+                        for (let i = 0; i < Math.max(years.length, totalNet.length, load.length); i++) {
+                            let totalNetAnnotation = "";
+                            let loadAnnotation = "";
+                            
+                            const totalNetRounded = Math.round(totalNet[i] || 0);
+                            const prevTotalNet = i > 0 ? Math.round(totalNet[i - 1] || 0) : null;
+                            const nextTotalNet = i < totalNet.length - 1 ? Math.round(totalNet[i + 1] || 0) : null;
+                            
+                            if (prevTotalNet === null || nextTotalNet === null || totalNetRounded !== prevTotalNet || totalNetRounded !== nextTotalNet) {
+                                totalNetAnnotation = totalNetRounded.toString();
+                            }
+                            
+                            const loadRounded = Math.round(load[i] || 0);
+                            const prevLoad = i > 0 ? Math.round(load[i - 1] || 0) : null;
+                            const nextLoad = i < load.length - 1 ? Math.round(load[i + 1] || 0) : null;
+                            
+                            if (prevLoad === null || nextLoad === null || loadRounded !== prevLoad || loadRounded !== nextLoad) {
+                                loadAnnotation = loadRounded.toString();
+                            }
+                            
+                            data.addRow([
+                                years[i] || `${2025 + i}`,
+                                totalNet[i] || 0,
+                                totalNetAnnotation,
+                                load[i] || 0,
+                                loadAnnotation
+                            ]);
+                        }
+                    }
+                }
+                
+                console.log('Data table created, rows:', data.getNumberOfRows());
+                
+                const chartAreaConfig = {
+                    left: currentConfig.chartAreaLeft,
+                    right: currentConfig.chartAreaRight,
+                    height: currentConfig.chartAreaHeight,
+                    width: currentConfig.chartAreaWidth,
+                };
+                
+                if (currentConfig.chartAreaTop && !currentConfig.chartAreaTop.includes('auto')) {
+                    chartAreaConfig.top = currentConfig.chartAreaTop;
+                }
+                
+                if (currentConfig.chartAreaBottom !== undefined && currentConfig.chartAreaBottom !== null) {
+                    chartAreaConfig.bottom = currentConfig.chartAreaBottom;
+                }
+                
+                const orangeStemLength = currentConfig.orangeAnnotationAbove 
+                    ? currentConfig.annotationStemLength 
+                    : -currentConfig.annotationStemLength * 2.65;
+                
+                const greenStemLength = currentConfig.greenAnnotationAbove 
+                    ? currentConfig.annotationStemLength 
+                    : -currentConfig.annotationStemLength * 2.65;
+                
+                const options = {
+                    fontName: "Golos Text",
+                    fontSize: currentConfig.baseFontSize,
+                    backgroundColor: "transparent",
+                    chartArea: chartAreaConfig,
+                    hAxis: {
+                        textStyle: { 
+                            color: "#8E8E93", 
+                            fontSize: currentConfig.axisFontSize, 
+                            bold: true 
+                        },
+                        gridlines: { 
+                            color: "#F2F2F7",
+                            count: -1
+                        },
+                        minorGridlines: {
+                            color: "#F2F2F7"
+                        },
+                        baselineColor: "#E5E5EA",
+                        slantedText: false,
+                        showTextEvery: 1,
+                        alternatingTextStyle: {
+                            color: "#8E8E93",
+                            fontSize: currentConfig.axisFontSize,
+                            bold: true
+                        },
+                        alternatingDirection: 1,
+                    },
+                    vAxis: {
+                        textStyle: { 
+                            color: "transparent", 
+                            fontSize: currentConfig.axisFontSize, 
+                            bold: true 
+                        },
+                        gridlines: { color: "#F2F2F7", count: currentConfig.vAxisGridlinesCount },
+                        baselineColor: "#E5E5EA",
+                        textPosition: "none",
+                        titleTextStyle: { color: "transparent" },
+                        viewWindowMode: "explicit",
+                        viewWindow: { 
+                            min: currentConfig.vAxisMin, 
+                            max: currentConfig.vAxisMax 
+                        },
+                        format: "decimal",
+                    },
+                    titlePosition: "none",
+                    legend: { position: "none" },
+                    lineWidth: 2.5,
+                    pointSize: 3.6,
+                    curveType: "function",
+                    annotations: {
+                        textStyle: {
+                            fontName: "Golos Text",
+                            fontSize: currentConfig.axisFontSize,
+                            bold: true,
+                            color: "#3A3A3C",
+                        },
+                        stem: { color: "transparent", length: currentConfig.annotationStemLength },
+                        alwaysOutside: true,
+                        highContrast: true,
+                        style: "point",
+                    },
+                    tooltip: {
+                        textStyle: { 
+                            fontName: "Golos Text",
+                            bold: true,
+                            fontSize: 8,
+                            color: "#1C1C1E"
+                        },
+                        showColorCode: true,
+                        isHtml: false,
+                        trigger: "focus",
+                        ignoreBounds: false,
+                    },
+                    isStacked: false,
+                    series: createdChartDataType === 'reserve' 
+                        ? {
+                            0: { 
+                                color: createdChartColors.primary, 
+                                pointShape: "circle", 
+                                areaOpacity: 0.15,
+                                annotations: {
+                                    stem: { color: "transparent", length: orangeStemLength },
+                                }
+                            },
+                          }
+                        : {
+                            0: { 
+                                color: createdChartColors.primary, 
+                                pointShape: "circle", 
+                                areaOpacity: 0.15,
+                                annotations: {
+                                    stem: { color: "transparent", length: orangeStemLength },
+                                }
+                            }, 
+                            1: { 
+                                color: createdChartColors.secondary, 
+                                pointShape: "circle", 
+                                areaOpacity: 0.15,
+                                annotations: {
+                                    stem: { color: "transparent", length: greenStemLength },
+                                }
+                            },
+                          },
+                };
+                
+                console.log('Drawing chart with data:', data);
+                console.log('Chart options:', options);
+                
+                const chart = new google.visualization.AreaChart(chartElement);
+                chart.draw(data, options);
+                
+                console.log('✅ Chart drawn successfully');
+                
+                // Обновляем легенду
+                updateLegend();
+            } catch (error) {
+                console.error('❌ Ошибка при отрисовке графика:', error);
+                console.error('Error stack:', error.stack);
+                alert('Ошибка при отрисовке графика: ' + error.message);
+            }
+        }
+        
+        function updateLegend() {
+            const legendDiv = document.getElementById('customLegend');
+            if (!legendDiv) return;
+            
+            const isReserve = createdChartDataType === 'reserve';
+            const isElectric = createdChartName && (createdChartName.includes('электрическ') || createdChartName.includes('МВА'));
+            const isLOS = createdChartName && (createdChartName.includes('ЛОС') || createdChartName.includes('водоотведение'));
+            
+            let html = '';
+            
+            if (isReserve) {
+                html = `
+                    <div style="display: flex; alignItems: center; gap: 8px; padding-left: ${currentConfig.legendLeftPadding}; margin-top: ${currentConfig.legendMarginTop};">
+                        <div style="width: 12px; height: 12px; min-width: 12px; border-radius: 50%; background-color: ${createdChartColors.primary}"></div>
+                        <span style="font-family: 'Golos Text', sans-serif; font-size: ${currentConfig.legendFontSize}px; color: #1C1C1E; font-weight: bold; line-height: 1.3;">
+                            ${isElectric ? 'Резерв трансформаторной мощности, МВА' : 'Резерв тепловой мощности, Гкал/ч'}
+                        </span>
+                    </div>
+                `;
+            } else {
+                html = `
+                    <div style="display: flex; flex-direction: column; alignItems: flex-start; gap: 2px; padding: 0; padding-left: ${currentConfig.legendLeftPadding}; margin-top: ${currentConfig.legendMarginTop}; width: 100%; box-sizing: border-box;">
+                        <div style="display: flex; alignItems: center; gap: 8px;">
+                            <div style="width: 12px; height: 12px; min-width: 12px; border-radius: 50%; background-color: ${createdChartColors.primary}"></div>
+                            <span style="font-family: 'Golos Text', sans-serif; font-size: ${currentConfig.legendFontSize}px; color: #1C1C1E; font-weight: bold; line-height: 1.3;">
+                                ${isLOS ? 'Проектная производительность, тыс.куб.м/сутки' : (isElectric ? 'Трансформаторная мощность, МВА' : 'Тепловая мощность нетто, Гкал/ч')}
+                            </span>
+                        </div>
+                        <div style="display: flex; alignItems: center; gap: 8px;">
+                            <div style="width: 12px; height: 12px; min-width: 12px; border-radius: 50%; background-color: ${createdChartColors.secondary}"></div>
+                            <span style="font-family: 'Golos Text', sans-serif; font-size: ${currentConfig.legendFontSize}px; color: #1C1C1E; font-weight: bold; line-height: 1.3;">
+                                ${isLOS ? 'Нагрузка существующих объектов, тыс.куб.м/сутки' : (isElectric ? 'Нагрузка существующих объектов, МВА' : 'Нагрузка существующих объектов, Гкал/ч')}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            legendDiv.innerHTML = html;
+        }
+        
+        function generateJsonFromConfig(cfg) {
+            return {
+                chartArea: {
+                    left: cfg.chartAreaLeft,
+                    right: cfg.chartAreaRight,
+                    top: cfg.chartAreaTop,
+                    bottom: cfg.chartAreaBottom,
+                    height: cfg.chartAreaHeight,
+                    width: cfg.chartAreaWidth,
+                },
+                fontSize: {
+                    base: cfg.baseFontSize,
+                    axis: cfg.axisFontSize,
+                    legend: cfg.legendFontSize,
+                },
+                legend: {
+                    leftPadding: cfg.legendLeftPadding,
+                    marginTop: cfg.legendMarginTop,
+                },
+                annotations: {
+                    stemLength: cfg.annotationStemLength,
+                    orangeAbove: cfg.orangeAnnotationAbove,
+                    greenAbove: cfg.greenAnnotationAbove,
+                },
+                vAxis: {
+                    min: cfg.vAxisMin,
+                    max: cfg.vAxisMax,
+                    gridlinesCount: cfg.vAxisGridlinesCount,
+                },
+                container: {
+                    paddingTop: cfg.containerPaddingTop,
+                    chartHeight: cfg.chartContainerHeight,
+                },
+            };
+        }
+        
+        function updateJsonConfig() {
+            const json = JSON.stringify(generateJsonFromConfig(currentConfig), null, 2);
+            document.getElementById('jsonConfig').value = json;
+            document.getElementById('jsonError').style.display = 'none';
+        }
+        
+        function copyCurrentJson() {
+            const json = document.getElementById('jsonConfig').value;
+            navigator.clipboard.writeText(json).then(() => {
+                alert(`JSON для ${currentResolution} скопирован в буфер обмена`);
+            });
+        }
+        
+        function copyAllResolutionsJson() {
+            const allConfigs = {
+                "276x155": generateJsonFromConfig(config276),
+                "344x193": generateJsonFromConfig(config344),
+                "900x250": generateJsonFromConfig(config900),
+            };
+            const json = JSON.stringify(allConfigs, null, 2);
+            navigator.clipboard.writeText(json).then(() => {
+                alert('JSON для всех трех разрешений скопирован в буфер обмена');
+            });
+        }
+        
+        function saveChartConfigToStorage() {
+            if (!createdChartId) {
+                alert('Нет ID графика для сохранения');
+                return;
+            }
+            
+            // Убеждаемся, что ID не содержит начальный слэш
+            const cleanChartId = createdChartId.startsWith('/') ? createdChartId.substring(1) : createdChartId;
+            
+            const key = `chart_config_${cleanChartId}_${currentResolution}`;
+            const savedConfig = {
+                chartId: cleanChartId,
+                resolution: currentResolution,
+                config: currentConfig,
+                savedAt: new Date().toISOString(),
+            };
+            
+            try {
+                localStorage.setItem(key, JSON.stringify(savedConfig));
+                console.log(`✓ Конфигурация сохранена: ключ=${key}, ID=${cleanChartId}, разрешение=${currentResolution}`);
+                console.log(`  Конфигурация:`, currentConfig);
+                document.getElementById('savedConfigIndicator').style.display = 'block';
+                alert(`Конфигурация сохранена для ${createdChartName || cleanChartId} (${currentResolution})\n\nКлюч в localStorage: ${key}\n\nУбедитесь, что ID графика в компоненте совпадает с этим ID!`);
+            } catch (error) {
+                console.error('Ошибка сохранения:', error);
+                alert('Ошибка сохранения конфигурации: ' + error.message);
+            }
+        }
+        
+        // Обработка изменений JSON
+        document.addEventListener('DOMContentLoaded', () => {
+            const jsonTextarea = document.getElementById('jsonConfig');
+            if (jsonTextarea) {
+                let jsonTimeout;
+                jsonTextarea.addEventListener('input', (e) => {
+                    clearTimeout(jsonTimeout);
+                    jsonTimeout = setTimeout(() => {
+                        try {
+                            const parsed = JSON.parse(e.target.value);
+                            const errorDiv = document.getElementById('jsonError');
+                            
+                            // Проверяем, является ли это JSON с тремя разрешениями
+                            if (parsed["276x155"] && parsed["344x193"] && parsed["900x250"]) {
+                                // Применяем конфигурации для всех трех разрешений
+                                applyConfigFromJson(parsed["276x155"], config276, "276x155");
+                                applyConfigFromJson(parsed["344x193"], config344, "344x193");
+                                applyConfigFromJson(parsed["900x250"], config900, "900x250");
+                                
+                                // Обновляем текущую конфигурацию
+                                currentConfig = currentResolution === "276x155" ? config276 : (currentResolution === "344x193" ? config344 : config900);
+                                
+                                // Обновляем слайдеры и график
+                                updateConfigControls();
+                                updateChart();
+                                updateJsonConfig();
+                                
+                                errorDiv.style.display = 'none';
+                                alert('Конфигурации для всех трех разрешений успешно применены!');
+                            } else {
+                                // Обычная конфигурация для текущего разрешения
+                                applyConfigFromJson(parsed, currentConfig, currentResolution);
+                                updateConfigControls();
+                                updateChart();
+                                errorDiv.style.display = 'none';
+                            }
+                        } catch (error) {
+                            const errorDiv = document.getElementById('jsonError');
+                            errorDiv.textContent = 'Ошибка: ' + error.message;
+                            errorDiv.style.display = 'block';
+                        }
+                    }, 500);
+                });
+            }
+        });
+        
+        function applyConfigFromJson(parsed, targetConfig, resolution) {
+            const updates = {
+                chartAreaLeft: parsed.chartArea?.left ?? targetConfig.chartAreaLeft,
+                chartAreaRight: parsed.chartArea?.right ?? targetConfig.chartAreaRight,
+                chartAreaTop: parsed.chartArea?.top ?? targetConfig.chartAreaTop,
+                chartAreaBottom: parsed.chartArea?.bottom ?? targetConfig.chartAreaBottom,
+                chartAreaHeight: parsed.chartArea?.height ?? targetConfig.chartAreaHeight,
+                chartAreaWidth: parsed.chartArea?.width ?? targetConfig.chartAreaWidth,
+                baseFontSize: parsed.fontSize?.base ?? targetConfig.baseFontSize,
+                axisFontSize: parsed.fontSize?.axis ?? targetConfig.axisFontSize,
+                legendFontSize: parsed.fontSize?.legend ?? targetConfig.legendFontSize,
+                legendLeftPadding: parsed.legend?.leftPadding ?? targetConfig.legendLeftPadding,
+                legendMarginTop: parsed.legend?.marginTop ?? targetConfig.legendMarginTop,
+                annotationStemLength: parsed.annotations?.stemLength ?? targetConfig.annotationStemLength,
+                orangeAnnotationAbove: parsed.annotations?.orangeAbove ?? targetConfig.orangeAnnotationAbove,
+                greenAnnotationAbove: parsed.annotations?.greenAbove ?? targetConfig.greenAnnotationAbove,
+                vAxisMin: parsed.vAxis?.min ?? targetConfig.vAxisMin,
+                vAxisMax: parsed.vAxis?.max ?? targetConfig.vAxisMax,
+                vAxisGridlinesCount: parsed.vAxis?.gridlinesCount ?? targetConfig.vAxisGridlinesCount,
+                containerPaddingTop: parsed.container?.paddingTop ?? targetConfig.containerPaddingTop,
+                chartContainerHeight: parsed.container?.chartHeight ?? targetConfig.chartContainerHeight,
+            };
+            
+            if (resolution === "276x155") {
+                config276 = { ...config276, ...updates };
+            } else if (resolution === "344x193") {
+                config344 = { ...config344, ...updates };
+            } else {
+                config900 = { ...config900, ...updates };
+            }
+        }
+    </script>
+</body>
+</html>

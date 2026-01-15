@@ -1,0 +1,2204 @@
+[
+  {
+    "chartId": "teploait_11_1_novokurkinskoe_shosse_51_s_7",
+    "resolution": "276x155",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:52:50.106Z",
+    "action": "saved",
+    "changes": {
+      "vAxisMax": {
+        "before": 2,
+        "after": 4
+      }
+    }
+  },
+  {
+    "chartId": "teploait_11_1_novokurkinskoe_shosse_51_s_7",
+    "resolution": "344x193",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:52:42.312Z",
+    "action": "saved",
+    "changes": {
+      "vAxisMax": {
+        "before": 5,
+        "after": 4
+      }
+    }
+  },
+  {
+    "chartId": "teploait_11_1_novokurkinskoe_shosse_51_s_7",
+    "resolution": "564x116",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:52:33.670Z",
+    "action": "saved",
+    "changes": {
+      "vAxisMax": {
+        "before": 2,
+        "after": 3
+      }
+    }
+  },
+  {
+    "chartId": "teploait_11_1_novokurkinskoe_shosse_51_s_7",
+    "resolution": "564x116",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:52:24.279Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "564x116"
+      },
+      "customWidth": {
+        "after": 564
+      },
+      "customHeight": {
+        "after": 116
+      },
+      "chartAreaLeft": {
+        "after": "4%"
+      },
+      "chartAreaRight": {
+        "after": "4%"
+      },
+      "chartAreaTop": {
+        "after": "-5%"
+      },
+      "chartAreaBottom": {
+        "after": 30
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "92%"
+      },
+      "baseFontSize": {
+        "after": 11
+      },
+      "axisFontSize": {
+        "after": 10
+      },
+      "legendFontSize": {
+        "after": 11
+      },
+      "legendLeftPadding": {
+        "after": "4%"
+      },
+      "legendMarginTop": {
+        "after": "-7px"
+      },
+      "annotationStemLength": {
+        "after": 6
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 2
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1%"
+      },
+      "chartContainerHeight": {
+        "after": "91px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_11_1_novokurkinskoe_shosse_51_s_7",
+    "resolution": "900x250",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:52:24.272Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "900x250"
+      },
+      "customWidth": {
+        "after": 900
+      },
+      "customHeight": {
+        "after": 250
+      },
+      "chartAreaLeft": {
+        "after": "2.8%"
+      },
+      "chartAreaRight": {
+        "after": "3%"
+      },
+      "chartAreaTop": {
+        "after": "-25%"
+      },
+      "chartAreaBottom": {
+        "after": 31
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "94%"
+      },
+      "baseFontSize": {
+        "after": 13
+      },
+      "axisFontSize": {
+        "after": 14.5
+      },
+      "legendFontSize": {
+        "after": 16
+      },
+      "legendLeftPadding": {
+        "after": "3%"
+      },
+      "legendMarginTop": {
+        "after": "6px"
+      },
+      "annotationStemLength": {
+        "after": 7.5
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 3
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1.2%"
+      },
+      "chartContainerHeight": {
+        "after": "200px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_11_1_novokurkinskoe_shosse_51_s_7",
+    "resolution": "344x193",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:52:24.265Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "344x193"
+      },
+      "customWidth": {
+        "after": 344
+      },
+      "customHeight": {
+        "after": 193
+      },
+      "chartAreaLeft": {
+        "after": "5%"
+      },
+      "chartAreaRight": {
+        "after": "5%"
+      },
+      "chartAreaTop": {
+        "after": "-10%"
+      },
+      "chartAreaBottom": {
+        "after": 35
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "94%"
+      },
+      "baseFontSize": {
+        "after": 10
+      },
+      "axisFontSize": {
+        "after": 10.5
+      },
+      "legendFontSize": {
+        "after": 11
+      },
+      "legendLeftPadding": {
+        "after": "5%"
+      },
+      "legendMarginTop": {
+        "after": "3px"
+      },
+      "annotationStemLength": {
+        "after": 5
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 5
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1.4%"
+      },
+      "chartContainerHeight": {
+        "after": "151px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_11_1_novokurkinskoe_shosse_51_s_7",
+    "resolution": "276x155",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:52:24.259Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "276x155"
+      },
+      "customWidth": {
+        "after": 276
+      },
+      "customHeight": {
+        "after": 155
+      },
+      "chartAreaLeft": {
+        "after": "5.1%"
+      },
+      "chartAreaRight": {
+        "after": "5.7%"
+      },
+      "chartAreaTop": {
+        "after": "-2.3%"
+      },
+      "chartAreaBottom": {
+        "after": 60
+      },
+      "chartAreaHeight": {
+        "after": "97.2%"
+      },
+      "chartAreaWidth": {
+        "after": "90%"
+      },
+      "baseFontSize": {
+        "after": 9
+      },
+      "axisFontSize": {
+        "after": 9
+      },
+      "legendFontSize": {
+        "after": 10
+      },
+      "legendLeftPadding": {
+        "after": "6%"
+      },
+      "legendMarginTop": {
+        "after": "-25px"
+      },
+      "annotationStemLength": {
+        "after": 6
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 2
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "0%"
+      },
+      "chartContainerHeight": {
+        "after": "154px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_10_landyshevaya_ul_14_s_2",
+    "resolution": "900x250",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:52:02.629Z",
+    "action": "saved",
+    "changes": {
+      "vAxisMax": {
+        "before": 2,
+        "after": 8
+      }
+    }
+  },
+  {
+    "chartId": "teploait_10_landyshevaya_ul_14_s_2",
+    "resolution": "564x116",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:51:56.449Z",
+    "action": "saved",
+    "changes": {
+      "vAxisMax": {
+        "before": 2,
+        "after": 9
+      }
+    }
+  },
+  {
+    "chartId": "teploait_10_landyshevaya_ul_14_s_2",
+    "resolution": "344x193",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:51:49.944Z",
+    "action": "saved",
+    "changes": {
+      "vAxisMax": {
+        "before": 5,
+        "after": 8
+      }
+    }
+  },
+  {
+    "chartId": "teploait_10_landyshevaya_ul_14_s_2",
+    "resolution": "564x116",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:51:39.592Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "564x116"
+      },
+      "customWidth": {
+        "after": 564
+      },
+      "customHeight": {
+        "after": 116
+      },
+      "chartAreaLeft": {
+        "after": "4%"
+      },
+      "chartAreaRight": {
+        "after": "4%"
+      },
+      "chartAreaTop": {
+        "after": "-5%"
+      },
+      "chartAreaBottom": {
+        "after": 30
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "92%"
+      },
+      "baseFontSize": {
+        "after": 11
+      },
+      "axisFontSize": {
+        "after": 10
+      },
+      "legendFontSize": {
+        "after": 11
+      },
+      "legendLeftPadding": {
+        "after": "4%"
+      },
+      "legendMarginTop": {
+        "after": "-7px"
+      },
+      "annotationStemLength": {
+        "after": 6
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 2
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1%"
+      },
+      "chartContainerHeight": {
+        "after": "91px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_10_landyshevaya_ul_14_s_2",
+    "resolution": "900x250",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:51:39.586Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "900x250"
+      },
+      "customWidth": {
+        "after": 900
+      },
+      "customHeight": {
+        "after": 250
+      },
+      "chartAreaLeft": {
+        "after": "2.8%"
+      },
+      "chartAreaRight": {
+        "after": "3%"
+      },
+      "chartAreaTop": {
+        "after": "-25%"
+      },
+      "chartAreaBottom": {
+        "after": 31
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "94%"
+      },
+      "baseFontSize": {
+        "after": 13
+      },
+      "axisFontSize": {
+        "after": 14.5
+      },
+      "legendFontSize": {
+        "after": 16
+      },
+      "legendLeftPadding": {
+        "after": "3%"
+      },
+      "legendMarginTop": {
+        "after": "6px"
+      },
+      "annotationStemLength": {
+        "after": 7.5
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 2
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1.2%"
+      },
+      "chartContainerHeight": {
+        "after": "200px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_10_landyshevaya_ul_14_s_2",
+    "resolution": "344x193",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:51:39.579Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "344x193"
+      },
+      "customWidth": {
+        "after": 344
+      },
+      "customHeight": {
+        "after": 193
+      },
+      "chartAreaLeft": {
+        "after": "5%"
+      },
+      "chartAreaRight": {
+        "after": "5%"
+      },
+      "chartAreaTop": {
+        "after": "-10%"
+      },
+      "chartAreaBottom": {
+        "after": 35
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "94%"
+      },
+      "baseFontSize": {
+        "after": 10
+      },
+      "axisFontSize": {
+        "after": 10.5
+      },
+      "legendFontSize": {
+        "after": 11
+      },
+      "legendLeftPadding": {
+        "after": "5%"
+      },
+      "legendMarginTop": {
+        "after": "3px"
+      },
+      "annotationStemLength": {
+        "after": 5
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 5
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1.4%"
+      },
+      "chartContainerHeight": {
+        "after": "151px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_10_landyshevaya_ul_14_s_2",
+    "resolution": "276x155",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:51:39.569Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "276x155"
+      },
+      "customWidth": {
+        "after": 276
+      },
+      "customHeight": {
+        "after": 155
+      },
+      "chartAreaLeft": {
+        "after": "5.1%"
+      },
+      "chartAreaRight": {
+        "after": "5.7%"
+      },
+      "chartAreaTop": {
+        "after": "-2.3%"
+      },
+      "chartAreaBottom": {
+        "after": 60
+      },
+      "chartAreaHeight": {
+        "after": "97.2%"
+      },
+      "chartAreaWidth": {
+        "after": "90%"
+      },
+      "baseFontSize": {
+        "after": 9
+      },
+      "axisFontSize": {
+        "after": 9
+      },
+      "legendFontSize": {
+        "after": 10
+      },
+      "legendLeftPadding": {
+        "after": "6%"
+      },
+      "legendMarginTop": {
+        "after": "-25px"
+      },
+      "annotationStemLength": {
+        "after": 6
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 9
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "0%"
+      },
+      "chartContainerHeight": {
+        "after": "154px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_zhk_medovaya_dolina",
+    "resolution": "900x250",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:47:14.945Z",
+    "action": "saved",
+    "changes": {
+      "chartAreaBottom": {
+        "before": 20,
+        "after": 31
+      },
+      "legendMarginTop": {
+        "before": "20px",
+        "after": "6px"
+      },
+      "vAxisMax": {
+        "before": 5,
+        "after": 2
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_zhk_medovaya_dolina",
+    "resolution": "564x116",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:46:46.197Z",
+    "action": "saved",
+    "changes": {
+      "legendMarginTop": {
+        "before": "2px",
+        "after": "-7px"
+      },
+      "vAxisMax": {
+        "before": 5,
+        "after": 2
+      },
+      "chartContainerHeight": {
+        "before": "130px",
+        "after": "91px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_zhk_medovaya_dolina",
+    "resolution": "344x193",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:46:08.863Z",
+    "action": "saved",
+    "changes": {
+      "vAxisMax": {
+        "before": 5,
+        "after": 2
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_zhk_medovaya_dolina",
+    "resolution": "564x116",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:45:59.364Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "564x116"
+      },
+      "customWidth": {
+        "after": 564
+      },
+      "customHeight": {
+        "after": 116
+      },
+      "chartAreaLeft": {
+        "after": "4%"
+      },
+      "chartAreaRight": {
+        "after": "4%"
+      },
+      "chartAreaTop": {
+        "after": "-5%"
+      },
+      "chartAreaBottom": {
+        "after": 30
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "92%"
+      },
+      "baseFontSize": {
+        "after": 11
+      },
+      "axisFontSize": {
+        "after": 10
+      },
+      "legendFontSize": {
+        "after": 11
+      },
+      "legendLeftPadding": {
+        "after": "4%"
+      },
+      "legendMarginTop": {
+        "after": "2px"
+      },
+      "annotationStemLength": {
+        "after": 6
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 5
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1%"
+      },
+      "chartContainerHeight": {
+        "after": "130px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_zhk_medovaya_dolina",
+    "resolution": "900x250",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:45:59.359Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "900x250"
+      },
+      "customWidth": {
+        "after": 900
+      },
+      "customHeight": {
+        "after": 250
+      },
+      "chartAreaLeft": {
+        "after": "2.8%"
+      },
+      "chartAreaRight": {
+        "after": "3%"
+      },
+      "chartAreaTop": {
+        "after": "-25%"
+      },
+      "chartAreaBottom": {
+        "after": 20
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "94%"
+      },
+      "baseFontSize": {
+        "after": 13
+      },
+      "axisFontSize": {
+        "after": 14.5
+      },
+      "legendFontSize": {
+        "after": 16
+      },
+      "legendLeftPadding": {
+        "after": "3%"
+      },
+      "legendMarginTop": {
+        "after": "20px"
+      },
+      "annotationStemLength": {
+        "after": 7.5
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 5
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1.2%"
+      },
+      "chartContainerHeight": {
+        "after": "200px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_zhk_medovaya_dolina",
+    "resolution": "344x193",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:45:59.352Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "344x193"
+      },
+      "customWidth": {
+        "after": 344
+      },
+      "customHeight": {
+        "after": 193
+      },
+      "chartAreaLeft": {
+        "after": "5%"
+      },
+      "chartAreaRight": {
+        "after": "5%"
+      },
+      "chartAreaTop": {
+        "after": "-10%"
+      },
+      "chartAreaBottom": {
+        "after": 35
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "94%"
+      },
+      "baseFontSize": {
+        "after": 10
+      },
+      "axisFontSize": {
+        "after": 10.5
+      },
+      "legendFontSize": {
+        "after": 11
+      },
+      "legendLeftPadding": {
+        "after": "5%"
+      },
+      "legendMarginTop": {
+        "after": "3px"
+      },
+      "annotationStemLength": {
+        "after": 5
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 5
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1.4%"
+      },
+      "chartContainerHeight": {
+        "after": "151px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_zhk_medovaya_dolina",
+    "resolution": "276x155",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:45:59.345Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "276x155"
+      },
+      "customWidth": {
+        "after": 276
+      },
+      "customHeight": {
+        "after": 155
+      },
+      "chartAreaLeft": {
+        "after": "5.1%"
+      },
+      "chartAreaRight": {
+        "after": "5.7%"
+      },
+      "chartAreaTop": {
+        "after": "-2.3%"
+      },
+      "chartAreaBottom": {
+        "after": 60
+      },
+      "chartAreaHeight": {
+        "after": "97.2%"
+      },
+      "chartAreaWidth": {
+        "after": "90%"
+      },
+      "baseFontSize": {
+        "after": 9
+      },
+      "axisFontSize": {
+        "after": 9
+      },
+      "legendFontSize": {
+        "after": 10
+      },
+      "legendLeftPadding": {
+        "after": "6%"
+      },
+      "legendMarginTop": {
+        "after": "-25px"
+      },
+      "annotationStemLength": {
+        "after": 6
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 2
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "0%"
+      },
+      "chartContainerHeight": {
+        "after": "154px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_abv_sokolovo_mescherskaya_ul_27_k_1",
+    "resolution": "564x116",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:45:25.574Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "564x116"
+      },
+      "customWidth": {
+        "after": 564
+      },
+      "customHeight": {
+        "after": 116
+      },
+      "chartAreaLeft": {
+        "after": "4%"
+      },
+      "chartAreaRight": {
+        "after": "4%"
+      },
+      "chartAreaTop": {
+        "after": "-5%"
+      },
+      "chartAreaBottom": {
+        "after": 30
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "92%"
+      },
+      "baseFontSize": {
+        "after": 11
+      },
+      "axisFontSize": {
+        "after": 10
+      },
+      "legendFontSize": {
+        "after": 11
+      },
+      "legendLeftPadding": {
+        "after": "4%"
+      },
+      "legendMarginTop": {
+        "after": "-9px"
+      },
+      "annotationStemLength": {
+        "after": 6
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 4
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1%"
+      },
+      "chartContainerHeight": {
+        "after": "96px"
+      }
+    }
+  },
+  {
+    "chartId": "teploenergokompleks_srk_legendy_hokkeya",
+    "resolution": "564x116",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:40:23.882Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "564x116"
+      },
+      "customWidth": {
+        "after": 564
+      },
+      "customHeight": {
+        "after": 116
+      },
+      "chartAreaLeft": {
+        "after": "4%"
+      },
+      "chartAreaRight": {
+        "after": "4.6%"
+      },
+      "chartAreaTop": {
+        "after": "-5%"
+      },
+      "chartAreaBottom": {
+        "after": 30
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "92%"
+      },
+      "baseFontSize": {
+        "after": 11
+      },
+      "axisFontSize": {
+        "after": 10
+      },
+      "legendFontSize": {
+        "after": 11
+      },
+      "legendLeftPadding": {
+        "after": "4%"
+      },
+      "legendMarginTop": {
+        "after": "-9px"
+      },
+      "annotationStemLength": {
+        "after": 6
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 12
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1%"
+      },
+      "chartContainerHeight": {
+        "after": "95px"
+      }
+    }
+  },
+  {
+    "chartId": "teploenergokompleks_srk_legendy_hokkeya",
+    "resolution": "900x250",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:24:58.316Z",
+    "action": "saved",
+    "changes": {
+      "chartAreaBottom": {
+        "before": 20,
+        "after": 34
+      },
+      "legendLeftPadding": {
+        "before": "3%",
+        "after": "2.5%"
+      },
+      "legendMarginTop": {
+        "before": "20px",
+        "after": "2px"
+      },
+      "vAxisMax": {
+        "before": 5,
+        "after": 10
+      }
+    }
+  },
+  {
+    "chartId": "teploenergokompleks_srk_legendy_hokkeya",
+    "resolution": "344x193",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:24:18.331Z",
+    "action": "saved",
+    "changes": {
+      "annotationStemLength": {
+        "before": 5,
+        "after": 7
+      },
+      "vAxisMax": {
+        "before": 5,
+        "after": 13
+      }
+    }
+  },
+  {
+    "chartId": "teploenergokompleks_srk_legendy_hokkeya",
+    "resolution": "900x250",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:23:43.742Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "900x250"
+      },
+      "customWidth": {
+        "after": 900
+      },
+      "customHeight": {
+        "after": 250
+      },
+      "chartAreaLeft": {
+        "after": "2.8%"
+      },
+      "chartAreaRight": {
+        "after": "3%"
+      },
+      "chartAreaTop": {
+        "after": "-25%"
+      },
+      "chartAreaBottom": {
+        "after": 20
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "94%"
+      },
+      "baseFontSize": {
+        "after": 13
+      },
+      "axisFontSize": {
+        "after": 14.5
+      },
+      "legendFontSize": {
+        "after": 16
+      },
+      "legendLeftPadding": {
+        "after": "3%"
+      },
+      "legendMarginTop": {
+        "after": "20px"
+      },
+      "annotationStemLength": {
+        "after": 7.5
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 5
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1.2%"
+      },
+      "chartContainerHeight": {
+        "after": "200px"
+      }
+    }
+  },
+  {
+    "chartId": "teploenergokompleks_srk_legendy_hokkeya",
+    "resolution": "344x193",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:23:43.737Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "344x193"
+      },
+      "customWidth": {
+        "after": 344
+      },
+      "customHeight": {
+        "after": 193
+      },
+      "chartAreaLeft": {
+        "after": "5%"
+      },
+      "chartAreaRight": {
+        "after": "5%"
+      },
+      "chartAreaTop": {
+        "after": "-10%"
+      },
+      "chartAreaBottom": {
+        "after": 35
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "94%"
+      },
+      "baseFontSize": {
+        "after": 10
+      },
+      "axisFontSize": {
+        "after": 10.5
+      },
+      "legendFontSize": {
+        "after": 11
+      },
+      "legendLeftPadding": {
+        "after": "5%"
+      },
+      "legendMarginTop": {
+        "after": "3px"
+      },
+      "annotationStemLength": {
+        "after": 5
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 5
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1.4%"
+      },
+      "chartContainerHeight": {
+        "after": "151px"
+      }
+    }
+  },
+  {
+    "chartId": "teploenergokompleks_srk_legendy_hokkeya",
+    "resolution": "276x155",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T20:23:43.728Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "276x155"
+      },
+      "customWidth": {
+        "after": 276
+      },
+      "customHeight": {
+        "after": 155
+      },
+      "chartAreaLeft": {
+        "after": "5.1%"
+      },
+      "chartAreaRight": {
+        "after": "5.7%"
+      },
+      "chartAreaTop": {
+        "after": "-2.3%"
+      },
+      "chartAreaBottom": {
+        "after": 60
+      },
+      "chartAreaHeight": {
+        "after": "94.8%"
+      },
+      "chartAreaWidth": {
+        "after": "90%"
+      },
+      "baseFontSize": {
+        "after": 9
+      },
+      "axisFontSize": {
+        "after": 8
+      },
+      "legendFontSize": {
+        "after": 10.5
+      },
+      "legendLeftPadding": {
+        "after": "6%"
+      },
+      "legendMarginTop": {
+        "after": "-25px"
+      },
+      "annotationStemLength": {
+        "after": 6
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 22
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "0%"
+      },
+      "chartContainerHeight": {
+        "after": "151px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_yasnaya_ul_10a",
+    "resolution": "344x193",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T19:06:02.907Z",
+    "action": "saved",
+    "changes": {
+      "vAxisMax": {
+        "before": 5,
+        "after": 2
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_yasnaya_ul_10a",
+    "resolution": "900x250",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T19:05:44.032Z",
+    "action": "saved",
+    "changes": {
+      "chartAreaBottom": {
+        "before": 20,
+        "after": 29
+      },
+      "vAxisMax": {
+        "before": 5,
+        "after": 2
+      },
+      "chartContainerHeight": {
+        "before": "200px",
+        "after": "181px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_yasnaya_ul_10a",
+    "resolution": "900x250",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T19:04:34.368Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "900x250"
+      },
+      "customWidth": {
+        "after": 900
+      },
+      "customHeight": {
+        "after": 250
+      },
+      "chartAreaLeft": {
+        "after": "2.8%"
+      },
+      "chartAreaRight": {
+        "after": "3%"
+      },
+      "chartAreaTop": {
+        "after": "-25%"
+      },
+      "chartAreaBottom": {
+        "after": 20
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "94%"
+      },
+      "baseFontSize": {
+        "after": 13
+      },
+      "axisFontSize": {
+        "after": 14.5
+      },
+      "legendFontSize": {
+        "after": 16
+      },
+      "legendLeftPadding": {
+        "after": "3%"
+      },
+      "legendMarginTop": {
+        "after": "20px"
+      },
+      "annotationStemLength": {
+        "after": 7.5
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 5
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1.2%"
+      },
+      "chartContainerHeight": {
+        "after": "200px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_yasnaya_ul_10a",
+    "resolution": "344x193",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T19:04:34.365Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "344x193"
+      },
+      "customWidth": {
+        "after": 344
+      },
+      "customHeight": {
+        "after": 193
+      },
+      "chartAreaLeft": {
+        "after": "5%"
+      },
+      "chartAreaRight": {
+        "after": "5%"
+      },
+      "chartAreaTop": {
+        "after": "-10%"
+      },
+      "chartAreaBottom": {
+        "after": 35
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "94%"
+      },
+      "baseFontSize": {
+        "after": 10
+      },
+      "axisFontSize": {
+        "after": 10.5
+      },
+      "legendFontSize": {
+        "after": 11
+      },
+      "legendLeftPadding": {
+        "after": "5%"
+      },
+      "legendMarginTop": {
+        "after": "3px"
+      },
+      "annotationStemLength": {
+        "after": 5
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 5
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1.4%"
+      },
+      "chartContainerHeight": {
+        "after": "151px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_yasnaya_ul_10a",
+    "resolution": "276x155",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T19:04:34.360Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "276x155"
+      },
+      "customWidth": {
+        "after": 276
+      },
+      "customHeight": {
+        "after": 155
+      },
+      "chartAreaLeft": {
+        "after": "5.1%"
+      },
+      "chartAreaRight": {
+        "after": "5.7%"
+      },
+      "chartAreaTop": {
+        "after": "-2.3%"
+      },
+      "chartAreaBottom": {
+        "after": 60
+      },
+      "chartAreaHeight": {
+        "after": "97.2%"
+      },
+      "chartAreaWidth": {
+        "after": "90%"
+      },
+      "baseFontSize": {
+        "after": 9
+      },
+      "axisFontSize": {
+        "after": 9
+      },
+      "legendFontSize": {
+        "after": 10
+      },
+      "legendLeftPadding": {
+        "after": "6%"
+      },
+      "legendMarginTop": {
+        "after": "-25px"
+      },
+      "annotationStemLength": {
+        "after": 6
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 2
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "0%"
+      },
+      "chartContainerHeight": {
+        "after": "151px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_abv_sokolovo_mescherskaya_ul_27_k_1",
+    "resolution": "900x250",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T18:37:51.907Z",
+    "action": "saved",
+    "changes": {
+      "chartAreaBottom": {
+        "before": 20,
+        "after": 31
+      },
+      "chartAreaHeight": {
+        "before": "98%",
+        "after": "90.2%"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_abv_sokolovo_mescherskaya_ul_27_k_1",
+    "resolution": "276x155",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T18:36:27.287Z",
+    "action": "saved",
+    "changes": {
+      "chartContainerHeight": {
+        "before": "151px",
+        "after": "152px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_abv_sokolovo_mescherskaya_ul_27_k_1",
+    "resolution": "344x193",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T18:21:25.167Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "344x193"
+      },
+      "customWidth": {
+        "after": 344
+      },
+      "customHeight": {
+        "after": 193
+      },
+      "chartAreaLeft": {
+        "after": "5%"
+      },
+      "chartAreaRight": {
+        "after": "5%"
+      },
+      "chartAreaTop": {
+        "after": "-10%"
+      },
+      "chartAreaBottom": {
+        "after": 35
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "94%"
+      },
+      "baseFontSize": {
+        "after": 10
+      },
+      "axisFontSize": {
+        "after": 10.5
+      },
+      "legendFontSize": {
+        "after": 11
+      },
+      "legendLeftPadding": {
+        "after": "5%"
+      },
+      "legendMarginTop": {
+        "after": "3px"
+      },
+      "annotationStemLength": {
+        "after": 5
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 5
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1.4%"
+      },
+      "chartContainerHeight": {
+        "after": "151px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_abv_sokolovo_mescherskaya_ul_27_k_1",
+    "resolution": "276x155",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T18:21:25.154Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "276x155"
+      },
+      "customWidth": {
+        "after": 276
+      },
+      "customHeight": {
+        "after": 155
+      },
+      "chartAreaLeft": {
+        "after": "5.1%"
+      },
+      "chartAreaRight": {
+        "after": "5.7%"
+      },
+      "chartAreaTop": {
+        "after": "-2.3%"
+      },
+      "chartAreaBottom": {
+        "after": 60
+      },
+      "chartAreaHeight": {
+        "after": "97.2%"
+      },
+      "chartAreaWidth": {
+        "after": "90%"
+      },
+      "baseFontSize": {
+        "after": 9
+      },
+      "axisFontSize": {
+        "after": 9
+      },
+      "legendFontSize": {
+        "after": 10
+      },
+      "legendLeftPadding": {
+        "after": "6%"
+      },
+      "legendMarginTop": {
+        "after": "-25px"
+      },
+      "annotationStemLength": {
+        "after": 6
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 5
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "0%"
+      },
+      "chartContainerHeight": {
+        "after": "151px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_5a_2_solovinaya_roscha_ul_8_s_2",
+    "resolution": "900x250",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T17:36:05.698Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "900x250"
+      },
+      "customWidth": {
+        "after": 900
+      },
+      "customHeight": {
+        "after": 250
+      },
+      "chartAreaLeft": {
+        "after": "2.8%"
+      },
+      "chartAreaRight": {
+        "after": "3%"
+      },
+      "chartAreaTop": {
+        "after": "-25%"
+      },
+      "chartAreaBottom": {
+        "after": 20
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "94%"
+      },
+      "baseFontSize": {
+        "after": 13
+      },
+      "axisFontSize": {
+        "after": 14.5
+      },
+      "legendFontSize": {
+        "after": 16
+      },
+      "legendLeftPadding": {
+        "after": "3%"
+      },
+      "legendMarginTop": {
+        "after": "6px"
+      },
+      "annotationStemLength": {
+        "after": 7.5
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 1
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1.2%"
+      },
+      "chartContainerHeight": {
+        "after": "200px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_5a_2_solovinaya_roscha_ul_8_s_2",
+    "resolution": "344x193",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T17:36:05.688Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "344x193"
+      },
+      "customWidth": {
+        "after": 344
+      },
+      "customHeight": {
+        "after": 193
+      },
+      "chartAreaLeft": {
+        "after": "5%"
+      },
+      "chartAreaRight": {
+        "after": "5%"
+      },
+      "chartAreaTop": {
+        "after": "-10%"
+      },
+      "chartAreaBottom": {
+        "after": 35
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "94%"
+      },
+      "baseFontSize": {
+        "after": 10
+      },
+      "axisFontSize": {
+        "after": 10.5
+      },
+      "legendFontSize": {
+        "after": 11
+      },
+      "legendLeftPadding": {
+        "after": "5%"
+      },
+      "legendMarginTop": {
+        "after": "3px"
+      },
+      "annotationStemLength": {
+        "after": 5
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 5
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1.4%"
+      },
+      "chartContainerHeight": {
+        "after": "151px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_5a_2_solovinaya_roscha_ul_8_s_2",
+    "resolution": "276x155",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T17:36:05.678Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "276x155"
+      },
+      "customWidth": {
+        "after": 276
+      },
+      "customHeight": {
+        "after": 155
+      },
+      "chartAreaLeft": {
+        "after": "5.1%"
+      },
+      "chartAreaRight": {
+        "after": "5.7%"
+      },
+      "chartAreaTop": {
+        "after": "-2.3%"
+      },
+      "chartAreaBottom": {
+        "after": 60
+      },
+      "chartAreaHeight": {
+        "after": "97.2%"
+      },
+      "chartAreaWidth": {
+        "after": "90%"
+      },
+      "baseFontSize": {
+        "after": 9
+      },
+      "axisFontSize": {
+        "after": 9
+      },
+      "legendFontSize": {
+        "after": 10
+      },
+      "legendLeftPadding": {
+        "after": "6%"
+      },
+      "legendMarginTop": {
+        "after": "-25px"
+      },
+      "annotationStemLength": {
+        "after": 6
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 5
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "0%"
+      },
+      "chartContainerHeight": {
+        "after": "151px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_abv_sokolovo_mescherskaya_ul_27_k_1",
+    "resolution": "900x250",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T17:06:35.263Z",
+    "action": "saved",
+    "changes": {
+      "chartContainerHeight": {
+        "before": "183px",
+        "after": "179px"
+      }
+    }
+  },
+  {
+    "chartId": "teploait_1_abv_sokolovo_mescherskaya_ul_27_k_1",
+    "resolution": "900x250",
+    "userName": "Олег",
+    "timestamp": "2026-01-15T17:06:13.667Z",
+    "action": "saved",
+    "changes": {
+      "resolution": {
+        "after": "900x250"
+      },
+      "customWidth": {
+        "after": 900
+      },
+      "customHeight": {
+        "after": 250
+      },
+      "chartAreaLeft": {
+        "after": "2.8%"
+      },
+      "chartAreaRight": {
+        "after": "3%"
+      },
+      "chartAreaTop": {
+        "after": "-25%"
+      },
+      "chartAreaBottom": {
+        "after": 20
+      },
+      "chartAreaHeight": {
+        "after": "98%"
+      },
+      "chartAreaWidth": {
+        "after": "94%"
+      },
+      "baseFontSize": {
+        "after": 13
+      },
+      "axisFontSize": {
+        "after": 14.5
+      },
+      "legendFontSize": {
+        "after": 16
+      },
+      "legendLeftPadding": {
+        "after": "3%"
+      },
+      "legendMarginTop": {
+        "after": "20px"
+      },
+      "annotationStemLength": {
+        "after": 7.5
+      },
+      "orangeAnnotationAbove": {
+        "after": true
+      },
+      "greenAnnotationAbove": {
+        "after": false
+      },
+      "vAxisMin": {
+        "after": 0
+      },
+      "vAxisMax": {
+        "after": 5
+      },
+      "vAxisGridlinesCount": {
+        "after": 1
+      },
+      "containerPaddingTop": {
+        "after": "1.2%"
+      },
+      "chartContainerHeight": {
+        "after": "183px"
+      }
+    }
+  }
+]

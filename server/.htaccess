@@ -1,0 +1,12 @@
+# Backend API сервер
+# Если используете Apache с mod_proxy, раскомментируйте:
+
+# ProxyPass /api http://localhost:3001/api
+# ProxyPassReverse /api http://localhost:3001/api
+
+# Или используйте RewriteRule для проксирования:
+# RewriteEngine On
+# RewriteRule ^api/(.*)$ http://localhost:3001/api/$1 [P,L]
+
+# Для PHP-FPM или другого сервера настройте соответствующим образом
+
