@@ -189,10 +189,6 @@ function App() {
         {/* Водоотведение */}
         <Route path="/balancelos_new" element={<ProtectedRoute><BalanceLosNewChart /></ProtectedRoute>} />
 
-        {/* Графики тепла из файла Тепло_для_графика_26_35.xlsx - публичные маршруты */}
-        <Route path="/teplo/:chartId" element={<TeploChart />} />
-        <Route path="/electric/:chartId" element={<TeploChart />} />
-
         {/* Электрические графики */}
         <Route path="/balancevykhino_electric" element={<ProtectedRoute><BalanceVykhinoElectricChart /></ProtectedRoute>} />
         <Route path="/reservevykhino_electric" element={<ProtectedRoute><ReserveVykhinoElectricChart /></ProtectedRoute>} />
@@ -247,7 +243,10 @@ function App() {
         <Route path="/modelingbalanceparkovaya_electric" element={<ProtectedRoute><ModelingBalanceParkovayaElectricChart /></ProtectedRoute>} />
         <Route path="/modelingreserveparkovaya_electric" element={<ProtectedRoute><ModelingReserveParkovayaElectricChart /></ProtectedRoute>} />
         <Route path="/modelingbalancetsimlyanskaya_electric" element={<ProtectedRoute><ModelingBalanceTsimlyanskayaElectricChart /></ProtectedRoute>} />
-        <Route path="/modelingreservetsimlyanskaya_electric" element={<ProtectedRoute><ModelingReserveTsimlyanskayaElectricChart /></ProtectedRoute>} />
+        <Route path="/modelingreservetsimlyanskaya_electric" element={<ProtectedRoute><ModelingReserveTsimlyanskayaElectricChart /></ProtectedRoute> } />
+
+        {/* Графики тепла и электричества - публичные маршруты без префиксов (должен быть последним) */}
+        <Route path="/:chartId" element={<TeploChart />} />
       </Routes>
     </BrowserRouter>
   );
