@@ -827,68 +827,10 @@ app.get('/api/charts/:chartId/data', async (req, res) => {
   }
 });
 
-// API: Получение списка всех графиков
+// API: Получение списка всех графиков (с кэшированием)
 app.get('/api/charts/list', async (req, res) => {
-  console.log('Запрос к /api/charts/list получен');
   try {
-  const mapperPath = path.join(COMPONENTS_DIR, 'ChartDataMapper.ts');
-    
-    console.log('Попытка загрузить список графиков из:', mapperPath);
-    console.log('COMPONENTS_DIR:', COMPONENTS_DIR);
-    console.log('Файл существует:', fs.existsSync(mapperPath));
-    
-    if (!fs.existsSync(mapperPath)) {
-      console.error('ChartDataMapper.ts не найден по пути:', mapperPath);
-      return res.status(404).json({ error: `ChartDataMapper.ts не найден по пути: ${mapperPath}` });
-    }
-    
-    // Читаем файл ChartDataMapper.ts
-    const fileContent = fs.readFileSync(mapperPath, 'utf-8');
-    
-    // Парсим объекты напрямую из файла, используя regex
-    // Ищем все объекты с полями id, name, path, dataType, dataKey
-    const charts = [];
-    
-    // Используем regex для поиска объектов в формате:
-    // { id: '...', name: '...', path: '...', dataType: '...', dataLoader: ..., dataKey: '...' }
-    // Учитываем, что объекты могут быть на одной строке
-    // Ищем объекты, которые содержат все необходимые поля
-    // Улучшенный regex, который правильно обрабатывает кавычки внутри строк
-    // Используем жадное совпадение для name, чтобы захватить весь текст до следующего поля
-    const objectPattern = /{\s*id:\s*['"]([^'"]+)['"],\s*name:\s*['"](.*?)['"],\s*path:\s*['"]([^'"]+)['"],\s*dataType:\s*['"]([^'"]+)['"][^}]*dataKey:\s*['"]([^'"]*)['"]/gs;
-    let match;
-    
-    while ((match = objectPattern.exec(fileContent)) !== null) {
-      // Обрабатываем экранированные кавычки в name
-      const name = match[2].replace(/\\"/g, '"').replace(/\\'/g, "'");
-      charts.push({
-        id: match[1],
-        name: name,
-        path: match[3],
-        dataType: match[4],
-        dataKey: match[5] || undefined
-      });
-    }
-    
-    // Если не нашли с dataKey, пробуем без него
-    if (charts.length === 0) {
-      console.log('Не найдено графиков с dataKey, пробуем без него...');
-      const objectPatternNoDataKey = /{\s*id:\s*['"]([^'"]+)['"],\s*name:\s*['"](.*?)['"],\s*path:\s*['"]([^'"]+)['"],\s*dataType:\s*['"]([^'"]+)['"]/gs;
-      while ((match = objectPatternNoDataKey.exec(fileContent)) !== null) {
-        const name = match[2].replace(/\\"/g, '"').replace(/\\'/g, "'");
-        charts.push({
-          id: match[1],
-          name: name,
-          path: match[3],
-          dataType: match[4],
-          dataKey: undefined
-        });
-      }
-    }
-    
-    console.log(`Найдено графиков: ${charts.length}`);
-    
-    console.log(`Найдено графиков: ${charts.length}`);
+    const charts = getChartsList();
     res.json({ charts });
   } catch (error) {
     console.error('Ошибка получения списка графиков:', error);
@@ -974,6 +916,78 @@ let chartConfigs = loadFromFile(CONFIGS_FILE, {});
 // Хранилище истории изменений (загружаем из файла при старте)
 let chartHistory = loadFromFile(HISTORY_FILE, []);
 
+// Кэш для списка графиков (ChartDataMapper.ts)
+let chartsListCache = null;
+let chartsListCacheTime = 0;
+const CHARTS_LIST_CACHE_TTL = 60000; // 60 секунд кэш
+
+// Функция для получения списка графиков с кэшированием
+function getChartsList() {
+  const now = Date.now();
+  
+  // Если кэш актуален, возвращаем его
+  if (chartsListCache && (now - chartsListCacheTime) < CHARTS_LIST_CACHE_TTL) {
+    return chartsListCache;
+  }
+  
+  // Иначе загружаем из файла
+  try {
+    const mapperPath = path.join(COMPONENTS_DIR, 'ChartDataMapper.ts');
+    
+    if (!fs.existsSync(mapperPath)) {
+      console.error('ChartDataMapper.ts не найден по пути:', mapperPath);
+      return [];
+    }
+    
+    const fileContent = fs.readFileSync(mapperPath, 'utf-8');
+    const charts = [];
+    
+    const objectPattern = /{\s*id:\s*['"]([^'"]+)['"],\s*name:\s*['"](.*?)['"],\s*path:\s*['"]([^'"]+)['"],\s*dataType:\s*['"]([^'"]+)['"][^}]*dataKey:\s*['"]([^'"]*)['"]/gs;
+    let match;
+    
+    while ((match = objectPattern.exec(fileContent)) !== null) {
+      const name = match[2].replace(/\\"/g, '"').replace(/\\'/g, "'");
+      charts.push({
+        id: match[1],
+        name: name,
+        path: match[3],
+        dataType: match[4],
+        dataKey: match[5] || undefined
+      });
+    }
+    
+    // Если не нашли с dataKey, пробуем без него
+    if (charts.length === 0) {
+      const objectPatternNoDataKey = /{\s*id:\s*['"]([^'"]+)['"],\s*name:\s*['"](.*?)['"],\s*path:\s*['"]([^'"]+)['"],\s*dataType:\s*['"]([^'"]+)['"]/gs;
+      while ((match = objectPatternNoDataKey.exec(fileContent)) !== null) {
+        const name = match[2].replace(/\\"/g, '"').replace(/\\'/g, "'");
+        charts.push({
+          id: match[1],
+          name: name,
+          path: match[3],
+          dataType: match[4],
+          dataKey: undefined
+        });
+      }
+    }
+    
+    // Обновляем кэш
+    chartsListCache = charts;
+    chartsListCacheTime = now;
+    
+    return charts;
+  } catch (error) {
+    console.error('Ошибка получения списка графиков:', error);
+    return [];
+  }
+}
+
+// Функция для инвалидации кэша списка графиков
+function invalidateChartsListCache() {
+  chartsListCache = null;
+  chartsListCacheTime = 0;
+}
+
 // API: Получение всех статусов графиков
 app.get('/api/charts/statuses', (req, res) => {
   try {
@@ -1009,8 +1023,10 @@ app.post('/api/charts/:chartId/status', (req, res) => {
     
     chartStatuses[chartId] = status;
     
-    // Сохраняем в файл
+    // Сохраняем в файл (с debounce)
     saveToFile(STATUSES_FILE, chartStatuses);
+    
+    // Статусы уже в памяти, кэш не нужен - данные актуальны
     
     res.json({ success: true, chartId, status });
   } catch (error) {
@@ -1039,6 +1055,10 @@ app.post('/api/charts/:chartId/config/:resolution', (req, res) => {
     
     // Сохраняем в файл
     saveToFile(CONFIGS_FILE, chartConfigs);
+    
+    // Инвалидируем кэш списка графиков при изменении конфигурации
+    // (на случай если изменился ChartDataMapper.ts)
+    invalidateChartsListCache();
     
     res.json({ success: true, chartId, resolution });
   } catch (error) {
