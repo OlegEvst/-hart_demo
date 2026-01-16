@@ -1179,44 +1179,6 @@ app.post('/api/build', async (req, res) => {
   // Это нужно для обратной совместимости со старым фронтендом
   console.log('Запрос на сборку получен, но сборка отключена (изменения применяются автоматически)');
   return res.json({ success: true, message: 'Сборка отключена - изменения применяются автоматически' });
-  try {
-    const { spawn } = await import('child_process');
-    const projectRoot = path.join(__dirname, '..');
-    
-    console.log('Запуск сборки проекта...');
-    
-    // Отправляем ответ сразу, не дожидаясь завершения сборки
-    res.json({ success: true, message: 'Сборка проекта запущена в фоне' });
-    
-    // Запускаем сборку в фоне (после отправки ответа)
-    // Используем spawn для лучшей обработки длительных процессов
-    const buildProcess = spawn('npm', ['run', 'build'], {
-      cwd: projectRoot,
-      shell: true,
-      stdio: 'inherit'
-    });
-    
-    buildProcess.on('close', (code) => {
-      if (code === 0) {
-        console.log('Сборка проекта завершена успешно');
-      } else {
-        console.error(`Сборка проекта завершилась с кодом ${code}`);
-      }
-    });
-    
-    buildProcess.on('error', (error) => {
-      console.error('Ошибка при запуске сборки:', error);
-    });
-  } catch (error) {
-    console.error('Ошибка при запуске сборки:', error);
-    // Проверяем, не был ли ответ уже отправлен
-    if (!res.headersSent) {
-      res.status(500).json({ 
-        success: false, 
-        error: 'Ошибка при запуске сборки: ' + error.message 
-      });
-    }
-  }
 });
 
 // Главная страница - конструктор графиков
