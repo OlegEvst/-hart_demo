@@ -937,12 +937,32 @@ function loadFromFile(filePath, defaultValue) {
   return defaultValue;
 }
 
+// Debounce таймеры для каждого файла
+const saveTimers = {};
+const saveDataCache = {};
+
+// Функция сохранения с debounce (задержка 10 секунд)
 function saveToFile(filePath, data) {
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (error) {
-    console.error(`Ошибка сохранения в файл ${filePath}:`, error);
+  // Сохраняем данные в кэш
+  saveDataCache[filePath] = data;
+  
+  // Очищаем предыдущий таймер для этого файла
+  if (saveTimers[filePath]) {
+    clearTimeout(saveTimers[filePath]);
   }
+  
+  // Устанавливаем новый таймер
+  saveTimers[filePath] = setTimeout(() => {
+    try {
+      const dataToSave = saveDataCache[filePath];
+      fs.writeFileSync(filePath, JSON.stringify(dataToSave, null, 2), 'utf-8');
+      console.log(`Файл ${filePath} сохранен (debounced)`);
+      delete saveTimers[filePath];
+      delete saveDataCache[filePath];
+    } catch (error) {
+      console.error(`Ошибка сохранения в файл ${filePath}:`, error);
+    }
+  }, 10000); // Задержка 10 секунд
 }
 
 // Хранилище статусов графиков (загружаем из файла при старте)

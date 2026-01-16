@@ -48,7 +48,6 @@ import {
   setChartStatus,
   getStatusText,
   getStatusIndicator,
-  triggerBuild,
   loadStatusesFromServer
 } from "../utils/chartStatus";
 import { fetchChartsList, createServerDataLoader } from "../utils/api";
@@ -2382,14 +2381,8 @@ export function GraphBuilder() {
                   const chartHistory = await getChartHistoryByResolution(selectedChartId, currentResolution);
                   setHistory(chartHistory);
                   
-                  // Запускаем сборку проекта
-                  const buildSuccess = await triggerBuild();
-                  
-                  if (buildSuccess) {
-                    alert(`График ${currentChartInfo?.name || selectedChartId} помечен как готовый к публикации. Сборка проекта запущена.`);
-                  } else {
-                    alert(`График ${currentChartInfo?.name || selectedChartId} помечен как готовый к публикации. Ошибка запуска сборки - запустите сборку вручную.`);
-                  }
+                  // Статус сохранен на сервере
+                  alert(`График ${currentChartInfo?.name || selectedChartId} помечен как готовый к публикации. Статус сохранен.`);
                 }}
               >
                 <CheckCircle sx={{ mr: 0.5, fontSize: "1rem" }} /> {publishButtonText}
