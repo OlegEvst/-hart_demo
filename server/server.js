@@ -1173,8 +1173,13 @@ app.post('/api/charts/:chartId/config', (req, res) => {
   res.json({ success: true, chartId, config });
 });
 
-// API: Запуск сборки проекта
+// API: Запуск сборки проекта (ОТКЛЮЧЕНО - сборка больше не нужна)
 app.post('/api/build', async (req, res) => {
+  // Сборка отключена - просто возвращаем успех
+  console.log('Запрос на сборку получен, но сборка отключена');
+  return res.json({ success: true, message: 'Сборка отключена - изменения применяются автоматически' });
+  
+  /* ОТКЛЮЧЕНО
   try {
     const { spawn } = await import('child_process');
     const projectRoot = path.join(__dirname, '..');
