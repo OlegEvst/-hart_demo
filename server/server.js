@@ -749,27 +749,32 @@ function generateReserveDataFile(chartId, reserve, years) {
   return { content, dataVarName };
 }
 
-// API: Получение данных графика по ID
+// API: Получение данных графика по ID (с кэшированием)
 app.get('/api/charts/:chartId/data', async (req, res) => {
   try {
     const { chartId } = req.params;
+    const now = Date.now();
+    
+    // Проверяем кэш
+    const cachedData = chartDataCache.get(chartId);
+    const cacheTime = chartDataCacheTime.get(chartId);
+    
+    if (cachedData && cacheTime && (now - cacheTime) < CHART_DATA_CACHE_TTL) {
+      // Возвращаем данные из кэша
+      return res.json(cachedData);
+    }
     
     // Путь к файлу данных
     const dataFileName = `${chartId}.ts`;
     const dataFilePath = path.join(DATA_DIR, dataFileName);
     
-    console.log(`[API] Запрос данных для ${chartId}`);
-    console.log(`[API] DATA_DIR: ${DATA_DIR}`);
-    console.log(`[API] Ищем файл: ${dataFilePath}`);
-    
     // Проверяем существование файла
     if (!await fs.pathExists(dataFilePath)) {
-      console.log(`[API] Файл не найден: ${dataFilePath}`);
       // Показываем список доступных файлов для отладки
       if (await fs.pathExists(DATA_DIR)) {
         const files = await fs.readdir(DATA_DIR);
         const tsFiles = files.filter(f => f.endsWith('.ts')).slice(0, 10);
-        console.log(`[API] Доступные файлы (первые 10): ${tsFiles.join(', ')}`);
+        console.log(`[API] Файл не найден: ${dataFilePath}. Доступные файлы (первые 10): ${tsFiles.join(', ')}`);
       }
       return res.status(404).json({ error: `Данные для графика ${chartId} не найдены` });
     }
@@ -816,11 +821,17 @@ app.get('/api/charts/:chartId/data', async (req, res) => {
       });
     }
     
-    res.json({
+    const responseData = {
       chartId,
       dataVarName,
       data
-    });
+    };
+    
+    // Сохраняем в кэш
+    chartDataCache.set(chartId, responseData);
+    chartDataCacheTime.set(chartId, now);
+    
+    res.json(responseData);
   } catch (error) {
     console.error('Ошибка при получении данных графика:', error);
     res.status(500).json({ error: error.message });
@@ -920,6 +931,11 @@ let chartHistory = loadFromFile(HISTORY_FILE, []);
 let chartsListCache = null;
 let chartsListCacheTime = 0;
 const CHARTS_LIST_CACHE_TTL = 60000; // 60 секунд кэш
+
+// Кэш для данных графиков (TS файлы)
+const chartDataCache = new Map();
+const chartDataCacheTime = new Map();
+const CHART_DATA_CACHE_TTL = 300000; // 5 минут кэш для данных графиков
 
 // Функция для получения списка графиков с кэшированием
 function getChartsList() {
