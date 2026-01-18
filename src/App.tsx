@@ -5,14 +5,15 @@ import { GraphBuilder } from "./components/graph_builder";
 import { TeploChart } from "./components/TeploChart";
 
 function App() {
-  // В статической версии (production) исключаем админку
-  const isStaticBuild = import.meta.env.PROD;
+  // Админка доступна всегда (и в development, и в production на сервере)
+  // Проверяем, не статическая ли это сборка (без сервера)
+  const isStaticOnly = import.meta.env.PROD && !window.location.hostname.includes('localhost') && !window.location.port;
   
   return (
     <BrowserRouter>
       <Routes>
-        {/* Админка и авторизация - только в режиме разработки */}
-        {!isStaticBuild && (
+        {/* Админка и авторизация - доступна на сервере */}
+        {!isStaticOnly && (
           <>
             <Route path="/admin/login" element={<Login />} />
             <Route path="/login" element={<Login />} />

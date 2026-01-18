@@ -1507,6 +1507,22 @@ function serveAdminIndex(req, res) {
 app.get('/admin', serveAdminIndex);
 app.get('/admin/*', serveAdminIndex);
 
+// Отдаем configs.json для production сборки (до catch-all маршрута)
+app.get('/configs.json', (req, res) => {
+  try {
+    if (fs.existsSync(CONFIGS_FILE)) {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.sendFile(CONFIGS_FILE);
+    } else {
+      res.status(404).json({ error: 'configs.json not found' });
+    }
+  } catch (error) {
+    console.error('Ошибка отдачи configs.json:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // SPA маршрутизация - все остальные маршруты возвращают index.html
 // Это позволяет React Router обрабатывать маршруты на клиенте
 // ВАЖНО: этот маршрут должен быть последним, после всех статических файлов
