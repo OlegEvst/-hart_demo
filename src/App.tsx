@@ -6,14 +6,19 @@ import { TeploChart } from "./components/TeploChart";
 
 function App() {
   // Админка доступна всегда (и в development, и в production на сервере)
-  // Проверяем, не статическая ли это сборка (без сервера)
-  const isStaticOnly = import.meta.env.PROD && !window.location.hostname.includes('localhost') && !window.location.port;
+  // В production на сервере всегда показываем админку (API доступен)
+  // Статическая сборка определяется по отсутствию API
+  const hasServerAPI = typeof window !== 'undefined' && (
+    !import.meta.env.PROD || 
+    window.location.hostname.includes('localhost') || 
+    window.location.port !== ''
+  );
   
   return (
     <BrowserRouter>
       <Routes>
         {/* Админка и авторизация - доступна на сервере */}
-        {!isStaticOnly && (
+        {hasServerAPI && (
           <>
             <Route path="/admin/login" element={<Login />} />
             <Route path="/login" element={<Login />} />
@@ -26,7 +31,7 @@ function App() {
         )}
         
         {/* В статической версии корневой маршрут показывает 404 для несуществующих графиков */}
-        {isStaticOnly && (
+        {!hasServerAPI && (
           <Route path="/" element={<Navigate to="/404" replace />} />
         )}
 

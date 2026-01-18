@@ -11,11 +11,16 @@ interface ProtectedRouteProps {
  * В статической версии (production) пропускает все запросы без проверки
  */
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  // Проверяем, не статическая ли это сборка (без сервера)
-  const isStaticOnly = import.meta.env.PROD && !window.location.hostname.includes('localhost') && !window.location.port;
+  // В production на сервере всегда требуем авторизации (API доступен)
+  // Статическая сборка определяется по отсутствию API
+  const hasServerAPI = typeof window !== 'undefined' && (
+    !import.meta.env.PROD || 
+    window.location.hostname.includes('localhost') || 
+    window.location.port !== ''
+  );
   
   // В статической версии (без сервера) не требуем авторизации
-  if (isStaticOnly) {
+  if (!hasServerAPI) {
     return <>{children}</>;
   }
 
