@@ -26,7 +26,7 @@ function App() {
         )}
         
         {/* В статической версии корневой маршрут показывает 404 для несуществующих графиков */}
-        {isStaticBuild && (
+        {isStaticOnly && (
           <Route path="/" element={<Navigate to="/404" replace />} />
         )}
 
