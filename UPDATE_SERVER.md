@@ -31,7 +31,27 @@ cd server && npm start
 ## Минимальная версия (одна строка)
 
 ```bash
-cd /path/to/charts-demo && git pull && npm run build && pm2 restart charts-demo
+cd /path/to/charts-demo && git pull && npm run build && pm2 restart charts-api
+```
+
+## Решение конфликта при обновлении (если есть локальные изменения)
+
+Если git pull выдает ошибку о локальных изменениях в `server/storage/*`:
+
+```bash
+# Вариант 1: Сохранить локальные изменения и обновить (рекомендуется)
+cd /var/www/chart-demo
+git stash
+git pull
+npm run build
+pm2 restart charts-api
+
+# Вариант 2: Заменить локальные файлы на версию из git (если локальные не важны)
+cd /var/www/chart-demo
+git checkout -- server/storage/*.json
+git pull
+npm run build
+pm2 restart charts-api
 ```
 
 ## Проверка статуса PM2
