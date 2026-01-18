@@ -8,8 +8,14 @@ interface ProtectedRouteProps {
 
 /**
  * Компонент для защиты маршрутов - требует авторизации
+ * В статической версии (production) пропускает все запросы без проверки
  */
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
+  // В статической версии (production) не требуем авторизации
+  if (import.meta.env.PROD) {
+    return <>{children}</>;
+  }
+
   const location = useLocation();
   const authenticated = isAuthenticated();
 

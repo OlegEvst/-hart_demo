@@ -18,9 +18,23 @@ export default defineConfig({
         chunkFileNames: 'assets/[name].[hash].js',
         entryFileNames: 'assets/[name].[hash].js',
       },
+      // Убеждаемся, что все данные включены в сборку (не tree-shaken)
+      treeshake: {
+        moduleSideEffects: (id) => {
+          // Включаем все файлы данных в сборку
+          if (id.includes('/src/data/') && id.endsWith('.ts')) {
+            return true;
+          }
+          return false;
+        }
+      }
     },
   },
-  base: process.env.VITE_ADMIN_BASE_PATH || (process.env.NODE_ENV === 'production' ? '/admin/' : '/'),
+  base: process.env.VITE_ADMIN_BASE_PATH || '/',
   // Убеждаемся, что все пути корректны
   publicDir: 'public',
+  // Оптимизация зависимостей
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'react-google-charts']
+  }
 })

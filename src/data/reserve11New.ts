@@ -38,5 +38,9 @@ export const reserve11NewData = [
   {
     "year": "2034",
     "reserve": 8.44907212756334
+  },
+  {
+    "year": "2035",
+    "reserve": 0
   }
 ];

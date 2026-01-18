@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { loadChartConfig, getChartIdFromPath } from '../utils/chartConfigStorage';
+import { getDefaultConfig, type ChartConfig, type Resolution } from '../utils/defaultChartConfigs';
 
 export interface ChartConfigValues {
   chartAreaLeft?: string;
@@ -27,7 +28,7 @@ export interface ChartConfigValues {
  * Хук для загрузки сохраненных настроек графика
  * Определяет разрешение на основе размера окна и загружает соответствующую конфигурацию
  */
-export function useSavedChartConfig(pathOrChartId: string, width: number, height: number): ChartConfigValues | null {
+export function useSavedChartConfig(pathOrChartId: string, width: number, height: number, isTeploChart: boolean = false): ChartConfigValues | null {
   const [savedConfig, setSavedConfig] = useState<ChartConfigValues | null>(null);
   
   useEffect(() => {
@@ -41,7 +42,7 @@ export function useSavedChartConfig(pathOrChartId: string, width: number, height
     const is344x193 = width >= 340 && width <= 350;
     const is900x250 = width > 500;
     
-    let resolution: '276x155' | '344x193' | '900x250';
+    let resolution: Resolution;
     if (is900x250) {
       resolution = '900x250';
     } else if (is276x155) {
@@ -61,7 +62,7 @@ export function useSavedChartConfig(pathOrChartId: string, width: number, height
       // Если конфигурация не найдена для определенного разрешения, пробуем другие разрешения
       if (!config) {
         // Пробуем все разрешения по порядку приоритета
-        const resolutions: Array<'276x155' | '344x193' | '900x250'> = ['276x155', '344x193', '900x250'];
+        const resolutions: Resolution[] = ['276x155', '344x193', '900x250', '564x116'];
         for (const res of resolutions) {
           const testConfig = await loadChartConfig(chartId, res);
           if (testConfig) {
@@ -73,41 +74,44 @@ export function useSavedChartConfig(pathOrChartId: string, width: number, height
         }
       }
       
-      if (config) {
-        console.log(`✓ Загружена конфигурация для ${chartId} (${resolution}), размер окна: ${width}x${height}`);
-        console.log(`  Конфигурация:`, config);
-        // Преобразуем ChartConfig в ChartConfigValues (убираем лишние поля)
-        const configValues: ChartConfigValues = {
-          chartAreaLeft: config.chartAreaLeft,
-          chartAreaRight: config.chartAreaRight,
-          chartAreaTop: config.chartAreaTop,
-          chartAreaBottom: config.chartAreaBottom,
-          chartAreaHeight: config.chartAreaHeight,
-          chartAreaWidth: config.chartAreaWidth,
-          baseFontSize: config.baseFontSize,
-          axisFontSize: config.axisFontSize,
-          legendFontSize: config.legendFontSize,
-          legendLeftPadding: config.legendLeftPadding,
-          legendMarginTop: config.legendMarginTop,
-          annotationStemLength: config.annotationStemLength,
-          orangeAnnotationAbove: config.orangeAnnotationAbove,
-          greenAnnotationAbove: config.greenAnnotationAbove,
-          vAxisMin: config.vAxisMin,
-          vAxisMax: config.vAxisMax,
-          vAxisGridlinesCount: config.vAxisGridlinesCount,
-          containerPaddingTop: config.containerPaddingTop,
-          chartContainerHeight: config.chartContainerHeight,
-        };
-        setSavedConfig(configValues);
-      } else {
-        console.log(`✗ Конфигурация не найдена для ${chartId} (пробовали ${resolution}), размер окна: ${width}x${height}`);
-        console.log(`  Проверьте, что в конструкторе был введен правильный ID: ${chartId}`);
-        setSavedConfig(null);
-      }
+      // Если конфигурация найдена, используем её, иначе используем дефолтную
+      const finalConfig: ChartConfig = config || getDefaultConfig(resolution, isTeploChart);
+      
+      // Фиксируем параметры легенды из дефолтной конфигурации
+      const defaultConfig = getDefaultConfig(resolution, isTeploChart);
+      finalConfig.legendLeftPadding = defaultConfig.legendLeftPadding;
+      finalConfig.legendMarginTop = defaultConfig.legendMarginTop;
+      
+      console.log(`✓ Используется конфигурация для ${chartId} (${resolution}), размер окна: ${width}x${height}`);
+      console.log(`  Конфигурация:`, finalConfig);
+      
+      // Преобразуем ChartConfig в ChartConfigValues (убираем лишние поля)
+      const configValues: ChartConfigValues = {
+        chartAreaLeft: finalConfig.chartAreaLeft,
+        chartAreaRight: finalConfig.chartAreaRight,
+        chartAreaTop: finalConfig.chartAreaTop,
+        chartAreaBottom: finalConfig.chartAreaBottom,
+        chartAreaHeight: finalConfig.chartAreaHeight,
+        chartAreaWidth: finalConfig.chartAreaWidth,
+        baseFontSize: finalConfig.baseFontSize,
+        axisFontSize: finalConfig.axisFontSize,
+        legendFontSize: finalConfig.legendFontSize,
+        legendLeftPadding: finalConfig.legendLeftPadding,
+        legendMarginTop: finalConfig.legendMarginTop,
+        annotationStemLength: finalConfig.annotationStemLength,
+        orangeAnnotationAbove: finalConfig.orangeAnnotationAbove,
+        greenAnnotationAbove: finalConfig.greenAnnotationAbove,
+        vAxisMin: finalConfig.vAxisMin,
+        vAxisMax: finalConfig.vAxisMax,
+        vAxisGridlinesCount: finalConfig.vAxisGridlinesCount,
+        containerPaddingTop: finalConfig.containerPaddingTop,
+        chartContainerHeight: finalConfig.chartContainerHeight,
+      };
+      setSavedConfig(configValues);
     };
     
     loadConfig().catch(console.error);
-  }, [pathOrChartId, width, height]);
+  }, [pathOrChartId, width, height, isTeploChart]);
   
   return savedConfig;
 }

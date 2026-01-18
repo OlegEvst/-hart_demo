@@ -1,0 +1,134 @@
+{
+  "276x155": {
+    "chartArea": {
+      "left": "4.9%",
+      "right": "5.7%",
+      "top": "3.9%",
+      "bottom": 51,
+      "height": "97.2%",
+      "width": "90%"
+    },
+    "fontSize": {
+      "base": 9,
+      "axis": 9,
+      "legend": 10
+    },
+    "legend": {
+      "leftPadding": "5.1%",
+      "marginTop": "-20px"
+    },
+    "annotations": {
+      "stemLength": 6,
+      "orangeAbove": true,
+      "greenAbove": false
+    },
+    "vAxis": {
+      "min": 0,
+      "max": 7,
+      "gridlinesCount": 1
+    },
+    "container": {
+      "paddingTop": "0%",
+      "chartHeight": "154px"
+    }
+  },
+  "344x193": {
+    "chartArea": {
+      "left": "5%",
+      "right": "5%",
+      "top": "-10%",
+      "bottom": 35,
+      "height": "98%",
+      "width": "94%"
+    },
+    "fontSize": {
+      "base": 10,
+      "axis": 10.5,
+      "legend": 11
+    },
+    "legend": {
+      "leftPadding": "5%",
+      "marginTop": "-1px"
+    },
+    "annotations": {
+      "stemLength": 5,
+      "orangeAbove": true,
+      "greenAbove": false
+    },
+    "vAxis": {
+      "min": 0,
+      "max": 5,
+      "gridlinesCount": 1
+    },
+    "container": {
+      "paddingTop": "1.4%",
+      "chartHeight": "160px"
+    }
+  },
+  "900x250": {
+    "chartArea": {
+      "left": "2.8%",
+      "right": "3%",
+      "top": "-25%",
+      "bottom": 31,
+      "height": "98%",
+      "width": "94%"
+    },
+    "fontSize": {
+      "base": 13,
+      "axis": 14.5,
+      "legend": 16
+    },
+    "legend": {
+      "leftPadding": "3%",
+      "marginTop": "0px"
+    },
+    "annotations": {
+      "stemLength": 7.5,
+      "orangeAbove": true,
+      "greenAbove": false
+    },
+    "vAxis": {
+      "min": 0,
+      "max": 6,
+      "gridlinesCount": 1
+    },
+    "container": {
+      "paddingTop": "1.2%",
+      "chartHeight": "200px"
+    }
+  },
+  "564x116": {
+    "chartArea": {
+      "left": "4%",
+      "right": "4%",
+      "top": "-5%",
+      "bottom": 30,
+      "height": "98%",
+      "width": "92%"
+    },
+    "fontSize": {
+      "base": 11,
+      "axis": 10,
+      "legend": 11
+    },
+    "legend": {
+      "leftPadding": "4%",
+      "marginTop": "-7px"
+    },
+    "annotations": {
+      "stemLength": 6,
+      "orangeAbove": true,
+      "greenAbove": false
+    },
+    "vAxis": {
+      "min": 0,
+      "max": 6,
+      "gridlinesCount": 1
+    },
+    "container": {
+      "paddingTop": "1%",
+      "chartHeight": "91px"
+    }
+  }
+}

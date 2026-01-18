@@ -23,5 +23,30 @@ export const newData = [
     "year": "2030",
     "total_net": 918,
     "load": 840.9000000000001
+  },
+  {
+    "year": "2031",
+    "total_net": 0,
+    "load": 0
+  },
+  {
+    "year": "2032",
+    "total_net": 0,
+    "load": 0
+  },
+  {
+    "year": "2033",
+    "total_net": 0,
+    "load": 0
+  },
+  {
+    "year": "2034",
+    "total_net": 0,
+    "load": 0
+  },
+  {
+    "year": "2035",
+    "total_net": 0,
+    "load": 0
   }
 ];

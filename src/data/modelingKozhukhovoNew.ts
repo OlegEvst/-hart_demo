@@ -48,5 +48,10 @@ export const modelingKozhukhovoNewData = [
     "year": "2034",
     "total_net": 265,
     "load": 0
+  },
+  {
+    "year": "2035",
+    "total_net": 0,
+    "load": 0
   }
 ];

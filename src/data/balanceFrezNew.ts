@@ -48,5 +48,10 @@ export const balanceFrezNewData = [
     "year": "2034",
     "total_net": 298.112,
     "load": 173.934
+  },
+  {
+    "year": "2035",
+    "total_net": 0,
+    "load": 0
   }
 ];

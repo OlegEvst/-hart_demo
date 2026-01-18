@@ -2,42 +2,42 @@
 export const teploКотельная_военный_комиссариат_г_москвыData = [
   {
     "year": "2026",
-    "value": 0.47
+    "value": 0
   },
   {
     "year": "2027",
-    "value": 0.47
+    "value": 0
   },
   {
     "year": "2028",
-    "value": 0.47
+    "value": 0
   },
   {
     "year": "2029",
-    "value": 0.47
+    "value": 0
   },
   {
     "year": "2030",
-    "value": 0.47
+    "value": 0
   },
   {
     "year": "2031",
-    "value": 0.47
+    "value": 0
   },
   {
     "year": "2032",
-    "value": 0.47
+    "value": 0
   },
   {
     "year": "2033",
-    "value": 0.47
+    "value": 0
   },
   {
     "year": "2034",
-    "value": 0.47
+    "value": 0
   },
   {
     "year": "2035",
-    "value": -0.06707629563628548
+    "value": 0
   }
 ];

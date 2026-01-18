@@ -48,5 +48,10 @@ export const modelingPerovoNewData = [
     "year": "2034",
     "total_net": 42.558,
     "load": 352.787
+  },
+  {
+    "year": "2035",
+    "total_net": 0,
+    "load": 0
   }
 ];

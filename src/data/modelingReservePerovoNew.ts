@@ -38,5 +38,9 @@ export const modelingReservePerovoNewData = [
   {
     "year": "2034",
     "reserve": 45.18200000000001
+  },
+  {
+    "year": "2035",
+    "reserve": 0
   }
 ];

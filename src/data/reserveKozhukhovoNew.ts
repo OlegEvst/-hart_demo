@@ -38,5 +38,9 @@ export const reserveKozhukhovoNewData = [
   {
     "year": "2034",
     "reserve": 264.8
+  },
+  {
+    "year": "2035",
+    "reserve": 0
   }
 ];

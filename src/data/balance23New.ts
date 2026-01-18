@@ -48,5 +48,10 @@ export const balance23NewData = [
     "year": "2034",
     "total_net": 4523,
     "load": 4488.058497760347
+  },
+  {
+    "year": "2035",
+    "total_net": 0,
+    "load": 0
   }
 ];

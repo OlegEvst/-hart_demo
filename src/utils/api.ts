@@ -119,8 +119,9 @@ export function createStaticDataLoader(chartId: string, dataKey: string) {
       // Пробуем импортировать файл данных
       let module;
       try {
-        // Используем динамический импорт с правильным путем
-        module = await import(`../data/${fileName}.ts`);
+        // Используем динамический импорт с расширением .js (Vite автоматически найдет .ts файлы при разработке)
+        // В production сборке все будет скомпилировано в .js
+        module = await import(`../data/${fileName}.js`);
       } catch (importError: any) {
         console.error(`[Static] Ошибка импорта файла ${fileName}.ts:`, importError);
         // В production сборке не должно быть fallback на сервер
@@ -134,19 +135,36 @@ export function createStaticDataLoader(chartId: string, dataKey: string) {
       // Ищем данные в модуле по dataKey или используем первый экспорт
       let data = null;
       
-      // Сначала пробуем найти по dataKey
+      // Сначала пробуем найти по dataKey (может быть латиница или кириллица)
       if (dataKey && module[dataKey]) {
         data = module[dataKey];
-      } else if (module.default) {
-        data = module.default;
       } else {
-        // Ищем первый массив в модуле
+        // Если dataKey не найден, ищем все ключи, содержащие 'Data'
         const keys = Object.keys(module);
+        // Пробуем найти ключ, который содержит 'Data' и является массивом
         for (const key of keys) {
-          const value = module[key];
-          if (Array.isArray(value) && value.length > 0) {
-            data = value;
-            break;
+          if (key.includes('Data') && Array.isArray(module[key]) && module[key].length > 0) {
+            // Проверяем, похож ли ключ на dataKey (для случаев латиница/кириллица)
+            const keyLower = key.toLowerCase();
+            if (keyLower.includes('electric') || keyLower.includes('teplo') || keyLower.includes('ait') || keyLower.includes('пс')) {
+              data = module[key];
+              console.log(`[Static] Найден альтернативный ключ: ${key} вместо ${dataKey}`);
+              break;
+            }
+          }
+        }
+        
+        // Если не нашли, пробуем default
+        if (!data && module.default) {
+          data = module.default;
+        } else if (!data) {
+          // Ищем первый массив в модуле
+          for (const key of keys) {
+            const value = module[key];
+            if (Array.isArray(value) && value.length > 0) {
+              data = value;
+              break;
+            }
           }
         }
       }

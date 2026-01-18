@@ -48,5 +48,10 @@ export const modeling11NewData = [
     "year": "2034",
     "total_net": 906,
     "load": 857.6839278724367
+  },
+  {
+    "year": "2035",
+    "total_net": 0,
+    "load": 0
   }
 ];

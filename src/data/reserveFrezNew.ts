@@ -38,5 +38,9 @@ export const reserveFrezNewData = [
   {
     "year": "2034",
     "reserve": 124.17800000000003
+  },
+  {
+    "year": "2035",
+    "reserve": 0
   }
 ];

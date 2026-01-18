@@ -38,5 +38,9 @@ export const modelingReserve23NewData = [
   {
     "year": "2034",
     "reserve": 34.941502239653346
+  },
+  {
+    "year": "2035",
+    "reserve": 0
   }
 ];

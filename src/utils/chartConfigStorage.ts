@@ -1,7 +1,60 @@
-import type { ChartConfig } from '../components/graph_builder';
+import type { ChartConfig } from './defaultChartConfigs';
+// Единый источник данных: configs.json
+// В development: загружается через API (который читает server/storage/configs.json)
+// В production: загружается напрямую из /configs.json (который включен в архив)
 
 const STORAGE_KEY_PREFIX = 'chart_config_';
 const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+
+// Единый источник конфигураций - configs.json
+let configsJsonData: Record<string, any> | null = null;
+let configsJsonLoaded = false;
+let configsJsonLoading = false;
+
+// Загружаем configs.json один раз при старте в production
+async function loadConfigsJson(): Promise<void> {
+  if (configsJsonLoaded || configsJsonLoading || !import.meta.env.PROD) {
+    return;
+  }
+  
+  configsJsonLoading = true;
+  try {
+    const response = await fetch('/configs.json', {
+      cache: 'no-store', // Не кэшируем, всегда загружаем актуальную версию
+    });
+    if (response.ok) {
+      const data = await response.json();
+      configsJsonData = data;
+      configsJsonLoaded = true;
+      const count = Object.keys(data).length;
+      console.log(`[ConfigStorage] ✓ Загружен configs.json (единый источник данных), записей: ${count}`);
+      
+      // Проверяем пример конфигурации для отладки
+      const exampleKey = Object.keys(data).find(k => k.includes('teploait_1_abv_sokolovo') && k.includes('900x250'));
+      if (exampleKey && data[exampleKey]) {
+        const ex = data[exampleKey];
+        console.log(`[ConfigStorage] Пример конфигурации (${exampleKey}): vAxisMin=${ex.config?.vAxisMin}, vAxisMax=${ex.config?.vAxisMax}`);
+      }
+    } else {
+      console.error(`[ConfigStorage] ❌ configs.json не найден (HTTP ${response.status}), будут использоваться дефолтные конфигурации`);
+      configsJsonLoaded = true; // Помечаем как загруженный, чтобы не пытаться снова
+    }
+  } catch (error) {
+    console.error('[ConfigStorage] ❌ Ошибка загрузки configs.json:', error);
+    configsJsonLoaded = true; // Помечаем как загруженный, чтобы не пытаться снова
+  } finally {
+    configsJsonLoading = false;
+  }
+}
+
+// Загружаем при инициализации модуля в production
+// Важно: загружаем синхронно при первом обращении, чтобы configs.json был доступен сразу
+if (import.meta.env.PROD) {
+  // Загружаем сразу при инициализации модуля
+  loadConfigsJson().catch(err => {
+    console.warn('[ConfigStorage] Ошибка предзагрузки configs.json:', err);
+  });
+}
 
 export interface SavedChartConfig {
   chartId: string;
@@ -62,20 +115,74 @@ export async function loadChartConfig(chartId: string, resolution: '276x155' | '
     return null;
   }
   
-  const key = `${chartId}_${resolution}`;
+  // Нормализуем chartId: заменяем elektrops на electricps (как в TeploChart)
+  const normalizedChartId = chartId.replace(/^elektrops/, 'electricps');
+  
+  const key = `${normalizedChartId}_${resolution}`;
   
   try {
-    // Пробуем загрузить с сервера
-    const response = await fetch(`${API_BASE_URL}/api/charts/${chartId}/config/${resolution}`);
+    // Единый источник данных: configs.json
+    if (import.meta.env.PROD) {
+      // В production: загружаем из /configs.json
+      // Убеждаемся, что configs.json загружен (ждем загрузки)
+      if (!configsJsonLoaded && !configsJsonLoading) {
+        await loadConfigsJson();
+      }
+      
+      // Ждем завершения загрузки, если она еще идет
+      let attempts = 0;
+      while (configsJsonLoading && attempts < 50) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+      }
+      
+      // Если configs.json загружен, используем его (ЕДИНСТВЕННЫЙ ИСТОЧНИК)
+      if (configsJsonData) {
+        const configKey = `${normalizedChartId}_${resolution}`;
+        const savedConfig = configsJsonData[configKey];
+        if (savedConfig && savedConfig.config) {
+          configCache[key] = savedConfig;
+          console.log(`[ConfigStorage] ✓ Загружена конфигурация из configs.json для ${normalizedChartId} (${resolution})`);
+          return savedConfig.config;
+        } else {
+          console.warn(`[ConfigStorage] ⚠ Конфигурация не найдена в configs.json для ${normalizedChartId} (${resolution}), ключ: ${configKey}`);
+        }
+      } else {
+        console.warn(`[ConfigStorage] ⚠ configs.json не загружен, пробуем localStorage для ${normalizedChartId} (${resolution})`);
+      }
+      
+      // Fallback на localStorage (только если configs.json не загружен)
+      const localStorageKey = `${STORAGE_KEY_PREFIX}${normalizedChartId}_${resolution}`;
+      let saved = localStorage.getItem(localStorageKey);
+      if (!saved && normalizedChartId !== chartId) {
+        saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}${chartId}_${resolution}`);
+      }
+      if (saved) {
+        const savedConfig: SavedChartConfig = JSON.parse(saved);
+        configCache[key] = savedConfig;
+        console.log(`[ConfigStorage] ⚠ Использована конфигурация из localStorage (configs.json не загружен) для ${normalizedChartId} (${resolution})`);
+        return savedConfig.config;
+      }
+      
+      // В production без конфигурации возвращаем null (будет использован дефолт)
+      console.warn(`[ConfigStorage] ⚠ Конфигурация не найдена, будет использован дефолт для ${normalizedChartId} (${resolution})`);
+      return null;
+    }
+    
+    // В development: загружаем через API (который читает server/storage/configs.json)
+    const response = await fetch(`${API_BASE_URL}/api/charts/${normalizedChartId}/config/${resolution}`);
     
     if (response.ok) {
       const result = await response.json();
       
       // Если сервер вернул null, конфигурации нет
       if (result === null) {
-        // Пробуем загрузить из localStorage
-        const localStorageKey = `${STORAGE_KEY_PREFIX}${chartId}_${resolution}`;
-        const saved = localStorage.getItem(localStorageKey);
+        // Fallback на localStorage
+        const localStorageKey = `${STORAGE_KEY_PREFIX}${normalizedChartId}_${resolution}`;
+        let saved = localStorage.getItem(localStorageKey);
+        if (!saved && normalizedChartId !== chartId) {
+          saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}${chartId}_${resolution}`);
+        }
         if (saved) {
           const savedConfig: SavedChartConfig = JSON.parse(saved);
           configCache[key] = savedConfig;
@@ -89,10 +196,12 @@ export async function loadChartConfig(chartId: string, resolution: '276x155' | '
       configCache[key] = savedConfig;
       return savedConfig.config;
     } else {
-      // Обрабатываем другие ошибки (не 404, так как сервер теперь всегда возвращает 200)
       // Fallback на localStorage
-      const localStorageKey = `${STORAGE_KEY_PREFIX}${chartId}_${resolution}`;
-      const saved = localStorage.getItem(localStorageKey);
+      const localStorageKey = `${STORAGE_KEY_PREFIX}${normalizedChartId}_${resolution}`;
+      let saved = localStorage.getItem(localStorageKey);
+      if (!saved && normalizedChartId !== chartId) {
+        saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}${chartId}_${resolution}`);
+      }
       if (saved) {
         const savedConfig: SavedChartConfig = JSON.parse(saved);
         configCache[key] = savedConfig;
@@ -101,11 +210,13 @@ export async function loadChartConfig(chartId: string, resolution: '276x155' | '
       return null;
     }
   } catch (error) {
-    // Тихая обработка ошибок - не логируем в консоль, если это не критическая ошибка
     // Fallback на localStorage
-    const localStorageKey = `${STORAGE_KEY_PREFIX}${chartId}_${resolution}`;
+    const localStorageKey = `${STORAGE_KEY_PREFIX}${normalizedChartId}_${resolution}`;
     try {
-      const saved = localStorage.getItem(localStorageKey);
+      let saved = localStorage.getItem(localStorageKey);
+      if (!saved && normalizedChartId !== chartId) {
+        saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}${chartId}_${resolution}`);
+      }
       if (saved) {
         const savedConfig: SavedChartConfig = JSON.parse(saved);
         configCache[key] = savedConfig;
@@ -122,16 +233,22 @@ export async function loadChartConfig(chartId: string, resolution: '276x155' | '
  * Синхронная версия для обратной совместимости (использует кэш)
  */
 export function loadChartConfigSync(chartId: string, resolution: '276x155' | '344x193' | '900x250' | '564x116'): ChartConfig | null {
-  const key = `${chartId}_${resolution}`;
+  // Нормализуем chartId: заменяем elektrops на electricps
+  const normalizedChartId = chartId.replace(/^elektrops/, 'electricps');
+  const key = `${normalizedChartId}_${resolution}`;
+  
   const cached = configCache[key];
   if (cached) {
     return cached.config;
   }
   
-  // Fallback на localStorage
-  const localStorageKey = `${STORAGE_KEY_PREFIX}${chartId}_${resolution}`;
+  // Fallback на localStorage (с нормализованным ID)
+  const localStorageKey = `${STORAGE_KEY_PREFIX}${normalizedChartId}_${resolution}`;
   try {
-    const saved = localStorage.getItem(localStorageKey);
+    let saved = localStorage.getItem(localStorageKey);
+    if (!saved && normalizedChartId !== chartId) {
+      saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}${chartId}_${resolution}`);
+    }
     if (saved) {
       const savedConfig: SavedChartConfig = JSON.parse(saved);
       configCache[key] = savedConfig;

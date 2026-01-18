@@ -48,5 +48,10 @@ export const balancePerovoNewData = [
     "year": "2034",
     "total_net": 397.969,
     "load": 352.787
+  },
+  {
+    "year": "2035",
+    "total_net": 0,
+    "load": 0
   }
 ];

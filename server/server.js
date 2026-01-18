@@ -5,6 +5,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import XLSX from 'xlsx';
+import archiver from 'archiver';
 import { generateBalanceComponent, generateReserveComponent } from './generateComponentTemplate.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -894,9 +895,16 @@ function loadFromFile(filePath, defaultValue) {
 const saveTimers = {};
 const saveDataCache = {};
 
+// Флаг блокировки для предотвращения одновременной генерации архива
+let archiveGenerationInProgress = false;
+
+// Флаг блокировки для предотвращения одновременной записи
+const fileWriteLocks = {};
+
 // Функция сохранения с debounce (задержка 10 секунд)
+// БЕЗОПАСНА для одновременной работы нескольких пользователей
 function saveToFile(filePath, data) {
-  // Сохраняем данные в кэш
+  // Сохраняем данные в кэш (всегда актуальное состояние из памяти)
   saveDataCache[filePath] = data;
   
   // Очищаем предыдущий таймер для этого файла
@@ -905,15 +913,37 @@ function saveToFile(filePath, data) {
   }
   
   // Устанавливаем новый таймер
-  saveTimers[filePath] = setTimeout(() => {
+  saveTimers[filePath] = setTimeout(async () => {
+    // Проверяем блокировку
+    if (fileWriteLocks[filePath]) {
+      // Если файл заблокирован, переносим сохранение на 1 секунду позже
+      saveTimers[filePath] = setTimeout(() => {
+        saveToFile(filePath, saveDataCache[filePath] || data);
+      }, 1000);
+      return;
+    }
+    
+    // Устанавливаем блокировку
+    fileWriteLocks[filePath] = true;
+    
     try {
-      const dataToSave = saveDataCache[filePath];
-      fs.writeFileSync(filePath, JSON.stringify(dataToSave, null, 2), 'utf-8');
-      console.log(`Файл ${filePath} сохранен (debounced)`);
+      // Берем актуальные данные из кэша (могут быть обновлены другими запросами)
+      const dataToSave = saveDataCache[filePath] || data;
+      
+      // Атомарная запись: сначала во временный файл, потом переименование
+      const tempPath = `${filePath}.tmp`;
+      fs.writeFileSync(tempPath, JSON.stringify(dataToSave, null, 2), 'utf-8');
+      fs.renameSync(tempPath, filePath);
+      
+      console.log(`Файл ${filePath} сохранен (debounced, безопасно)`);
       delete saveTimers[filePath];
       delete saveDataCache[filePath];
     } catch (error) {
       console.error(`Ошибка сохранения в файл ${filePath}:`, error);
+      // При ошибке не удаляем кэш, чтобы можно было повторить попытку
+    } finally {
+      // Снимаем блокировку
+      delete fileWriteLocks[filePath];
     }
   }, 10000); // Задержка 10 секунд
 }
@@ -1062,6 +1092,9 @@ app.post('/api/charts/:chartId/config/:resolution', (req, res) => {
     }
     
     const key = `${chartId}_${resolution}`;
+    
+    // Атомарное обновление: обновляем только нужный ключ в объекте
+    // Это безопасно для одновременной работы нескольких пользователей
     chartConfigs[key] = {
       chartId,
       resolution,
@@ -1069,8 +1102,9 @@ app.post('/api/charts/:chartId/config/:resolution', (req, res) => {
       savedAt: new Date().toISOString(),
     };
     
-    // Сохраняем в файл
-    saveToFile(CONFIGS_FILE, chartConfigs);
+    // Сохраняем в файл (передаем весь объект, но он уже обновлен атомарно)
+    // saveToFile использует актуальное состояние из памяти через кэш
+    saveToFile(CONFIGS_FILE, { ...chartConfigs });
     
     // Инвалидируем кэш списка графиков при изменении конфигурации
     // (на случай если изменился ChartDataMapper.ts)
@@ -1115,6 +1149,7 @@ app.get('/api/charts/configs', (req, res) => {
 });
 
 // API: Добавление записи в историю изменений
+// БЕЗОПАСНО для одновременной работы нескольких пользователей
 app.post('/api/charts/history', (req, res) => {
   try {
     const entry = req.body;
@@ -1124,12 +1159,10 @@ app.post('/api/charts/history', (req, res) => {
       return res.status(400).json({ error: 'Неполные данные записи истории' });
     }
     
-    chartHistory.unshift(entry); // Добавляем в начало
+    // Атомарное добавление в историю (безопасно для конкурентного доступа)
+    chartHistory = [entry, ...chartHistory].slice(0, 1000);
     
-    // Ограничиваем историю последними 1000 записями
-    chartHistory = chartHistory.slice(0, 1000);
-    
-    // Сохраняем в файл
+    // Сохраняем в файл (с debounce, безопасно)
     saveToFile(HISTORY_FILE, chartHistory);
     
     res.json({ success: true, entry });
@@ -1181,6 +1214,264 @@ app.post('/api/build', async (req, res) => {
   return res.json({ success: true, message: 'Сборка отключена - изменения применяются автоматически' });
 });
 
+// API: Генерация статичного архива для развертывания
+app.get('/api/generate-static-archive', async (req, res) => {
+  console.log('[API] Запрос на генерацию статичного архива получен');
+  
+  // Защита от одновременной генерации архива несколькими пользователями
+  if (archiveGenerationInProgress) {
+    return res.status(429).json({ error: 'Генерация архива уже выполняется. Пожалуйста, подождите.' });
+  }
+  
+  archiveGenerationInProgress = true;
+  
+  try {
+    console.log('Начало генерации статичного архива...');
+    
+    // Пути к файлам и папкам
+    const distPath = path.join(PROJECT_ROOT, 'dist');
+    const distAssetsPath = path.join(distPath, 'assets');
+    const configsPath = CONFIGS_FILE;
+    const htaccessPath = path.join(distPath, '.htaccess');
+    const indexHtmlPath = path.join(distPath, 'index.html');
+    
+    // Проверяем существование необходимых файлов
+    if (!fs.existsSync(distPath)) {
+      return res.status(404).json({ error: 'Папка dist не найдена. Выполните сборку проекта: npm run build' });
+    }
+    
+    if (!fs.existsSync(distAssetsPath)) {
+      return res.status(404).json({ error: 'Папка dist/assets не найдена' });
+    }
+    
+    if (!fs.existsSync(indexHtmlPath)) {
+      return res.status(404).json({ error: 'Файл dist/index.html не найден' });
+    }
+    
+    // Создаем архив
+    const archive = archiver('zip', {
+      zlib: { level: 9 } // Максимальное сжатие
+    });
+    
+    // Устанавливаем заголовки для скачивания
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const filename = `tec-graphs-static-${timestamp}.zip`;
+    res.attachment(filename);
+    res.setHeader('Content-Type', 'application/zip');
+    
+    // Подключаем архив к ответу
+    archive.pipe(res);
+    
+    // Добавляем configs.json (актуальный со стилями) - ЕДИНСТВЕННЫЙ ИСТОЧНИК ДАННЫХ
+    // Сначала принудительно сохраняем все изменения из кэша (БЕЗОПАСНО для множественных пользователей)
+    if (saveDataCache[CONFIGS_FILE]) {
+      try {
+        // Очищаем таймер, если он есть
+        if (saveTimers[CONFIGS_FILE]) {
+          clearTimeout(saveTimers[CONFIGS_FILE]);
+          delete saveTimers[CONFIGS_FILE];
+        }
+        
+        // Ждем, если файл заблокирован
+        let attempts = 0;
+        while (fileWriteLocks[CONFIGS_FILE] && attempts < 50) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          attempts++;
+        }
+        
+        // Устанавливаем блокировку
+        fileWriteLocks[CONFIGS_FILE] = true;
+        
+        try {
+          // Сохраняем немедленно (атомарно)
+          const dataToSave = saveDataCache[CONFIGS_FILE];
+          const tempPath = `${CONFIGS_FILE}.tmp`;
+          fs.writeFileSync(tempPath, JSON.stringify(dataToSave, null, 2), 'utf-8');
+          fs.renameSync(tempPath, CONFIGS_FILE);
+          delete saveDataCache[CONFIGS_FILE];
+          console.log('✓ Сохранен актуальный configs.json из кэша перед созданием архива');
+        } finally {
+          delete fileWriteLocks[CONFIGS_FILE];
+        }
+      } catch (err) {
+        console.warn('⚠ Не удалось сохранить configs.json из кэша:', err.message);
+        delete fileWriteLocks[CONFIGS_FILE];
+      }
+    }
+    
+    // Принудительно сохраняем текущее состояние chartConfigs из памяти (главный источник)
+    // БЕЗОПАСНО для одновременной работы: используем блокировку и атомарную запись
+    try {
+      // Ждем, если файл заблокирован другой операцией
+      let attempts = 0;
+      while (fileWriteLocks[CONFIGS_FILE] && attempts < 50) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+      }
+      
+      // Устанавливаем блокировку
+      fileWriteLocks[CONFIGS_FILE] = true;
+      
+      try {
+        // Используем актуальное состояние из памяти (это то, что используется в админке)
+        const currentConfigs = { ...chartConfigs };
+        
+        // Атомарная запись: сначала во временный файл, потом переименование
+        const tempPath = `${CONFIGS_FILE}.tmp`;
+        fs.writeFileSync(tempPath, JSON.stringify(currentConfigs, null, 2), 'utf-8');
+        fs.renameSync(tempPath, CONFIGS_FILE);
+        
+        const count = Object.keys(currentConfigs).length;
+        console.log(`✓ Синхронизирован configs.json с актуальным состоянием из памяти (${count} записей)`);
+        
+        // Проверяем пример для подтверждения
+        const exampleKey = Object.keys(currentConfigs).find(k => k.includes('teploait_1_abv_sokolovo') && k.includes('900x250'));
+        if (exampleKey && currentConfigs[exampleKey]) {
+          const ex = currentConfigs[exampleKey];
+          console.log(`✓ Пример конфигурации (${exampleKey}): vAxisMin=${ex.config?.vAxisMin}, vAxisMax=${ex.config?.vAxisMax}`);
+        }
+      } finally {
+        // Снимаем блокировку
+        delete fileWriteLocks[CONFIGS_FILE];
+      }
+    } catch (err) {
+      console.warn('⚠ Не удалось синхронизировать configs.json:', err.message);
+      // Снимаем блокировку в случае ошибки
+      delete fileWriteLocks[CONFIGS_FILE];
+    }
+    
+    if (fs.existsSync(configsPath)) {
+      // Проверяем размер и содержимое файла для подтверждения
+      const stats = fs.statSync(configsPath);
+      const fileContent = fs.readFileSync(configsPath, 'utf-8');
+      const configsData = JSON.parse(fileContent);
+      const configsCount = Object.keys(configsData).length;
+      
+      console.log(`✓ configs.json найден, размер: ${(stats.size / 1024).toFixed(2)} KB, записей: ${configsCount}`);
+      
+      // Проверяем пример для подтверждения актуальности
+      const exampleKey = Object.keys(configsData).find(k => k.includes('teploait_1_abv_sokolovo') && k.includes('900x250'));
+      if (exampleKey && configsData[exampleKey]) {
+        const ex = configsData[exampleKey];
+        console.log(`✓ Проверка актуальности (${exampleKey}): vAxisMin=${ex.config?.vAxisMin}, vAxisMax=${ex.config?.vAxisMax}`);
+      }
+      
+      archive.file(configsPath, { name: 'configs.json' });
+      console.log('✓ Добавлен актуальный configs.json в архив (единый источник данных)');
+    } else {
+      console.error('❌ configs.json не найден! Архив будет создан без конфигураций.');
+    }
+    
+    // Добавляем .htaccess (из статичной папки или создаем базовый)
+    // Сначала проверяем в dist
+    if (fs.existsSync(htaccessPath)) {
+      archive.file(htaccessPath, { name: '.htaccess' });
+      console.log('Добавлен .htaccess из dist');
+    } else {
+      // Ищем в статичной папке (пример из Desktop)
+      const staticHtaccessPaths = [
+        path.join(PROJECT_ROOT, '..', 'tec-graphs-ip.ru-STATIC-ONLY', '.htaccess'),
+        path.join(__dirname, '..', '..', 'tec-graphs-ip.ru-STATIC-ONLY', '.htaccess'),
+      ];
+      
+      let htaccessFound = false;
+      for (const staticPath of staticHtaccessPaths) {
+        if (fs.existsSync(staticPath)) {
+          archive.file(staticPath, { name: '.htaccess' });
+          console.log('Добавлен .htaccess из статичной папки:', staticPath);
+          htaccessFound = true;
+          break;
+        }
+      }
+      
+      if (!htaccessFound) {
+        // Создаем базовый .htaccess на основе примера из статичной папки
+        const basicHtaccess = `<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^index\\.html$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . index.html [L]
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json application/xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/html "access plus 0 seconds"
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType application/x-javascript "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\\.(html|htm)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Content-Type-Options "nosniff"
+    Header unset X-Frame-Options
+    Header set Content-Security-Policy "frame-ancestors *;"
+    Header unset Server
+    Header unset X-Powered-By
+</IfModule>
+
+<IfModule mod_mime.c>
+    AddType application/javascript js
+    AddType text/css css
+    AddType image/svg+xml svg
+    AddType application/json json
+</IfModule>`;
+        archive.append(basicHtaccess, { name: '.htaccess' });
+        console.log('Создан базовый .htaccess');
+      }
+    }
+    
+    // Добавляем index.html
+    archive.file(indexHtmlPath, { name: 'index.html' });
+    console.log('Добавлен index.html');
+    
+    // Добавляем всю папку assets
+    archive.directory(distAssetsPath, 'assets');
+    console.log('Добавлена папка assets');
+    
+    // Добавляем vite.svg если есть
+    const viteSvgPath = path.join(distPath, 'vite.svg');
+    if (fs.existsSync(viteSvgPath)) {
+      archive.file(viteSvgPath, { name: 'vite.svg' });
+      console.log('Добавлен vite.svg');
+    }
+    
+    // Завершаем архив
+    await archive.finalize();
+    
+    console.log('Архив успешно создан и отправлен');
+  } catch (error) {
+    console.error('Ошибка генерации архива:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Ошибка генерации архива: ' + error.message });
+    }
+  } finally {
+    // Снимаем блокировку в любом случае (успех или ошибка)
+    archiveGenerationInProgress = false;
+  }
+});
+
 // Главная страница - конструктор графиков
 app.get('/', (req, res) => {
   res.sendFile(path.join(DIST_PATH, 'index.html'));
@@ -1220,8 +1511,10 @@ app.get('/admin/*', serveAdminIndex);
 // Это позволяет React Router обрабатывать маршруты на клиенте
 // ВАЖНО: этот маршрут должен быть последним, после всех статических файлов
 app.get('*', (req, res) => {
-  // Пропускаем API маршруты
+  // Пропускаем API маршруты - но только если они не были обработаны ранее
+  // (это fallback для несуществующих API endpoints)
   if (req.path.startsWith('/api')) {
+    console.log(`[Catch-all] API маршрут не найден: ${req.path}`);
     return res.status(404).json({ error: 'Not found' });
   }
   

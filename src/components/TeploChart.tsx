@@ -3,6 +3,12 @@ import { Chart } from "react-google-charts";
 import { useParams } from "react-router-dom";
 import chartDataMap, { type ChartDataInfo } from "./ChartDataMapper";
 import { useSavedChartConfig } from "../hooks/useSavedChartConfig";
+// Импортируем все данные статически, как в charts-demo 2
+import { getChartData } from "../data/allChartsData";
+// Импортируем утилиты для адаптивной шкалы
+import { calculateAdaptiveAxisRange, detectResolution } from "../utils/adaptiveAxis";
+// Импортируем getDefaultConfig для единого источника дефолтных значений
+import { getDefaultConfig } from "../utils/defaultChartConfigs";
 
 function useWindowSize() {
   const [size, setSize] = useState([window.innerWidth, window.innerHeight]);
@@ -16,7 +22,8 @@ function useWindowSize() {
 
 type TeploDataItem = {
   year: string;
-  value: number;
+  value?: number | null;
+  reserve?: number | null;
 };
 
 export function TeploChart() {
@@ -34,67 +41,92 @@ export function TeploChart() {
     const loadData = async () => {
       if (!chartId) return;
       
-      const info = chartDataMap.find(c => c.id === chartId);
+      // Нормализуем chartId: заменяем elektrops на electricps
+      let normalizedChartId = chartId.replace(/^elektrops/, 'electricps');
+      
+      // Нормализация для известных несоответствий URL и chartId
+      const urlToChartIdMap: Record<string, string> = {
+        // Варианты с szao -> без szao (если данных нет для варианта с szao, используем данные без szao)
+        'teplokotelnaya_voennyy_komissariat_szao_g_moskvy': 'teplokotelnaya_voennyy_komissariat_g_moskvy', // Используем данные без szao
+        'teplokotelnaya_gbu_zhilischnik_rayona_filevskiy_park': 'teplokotelnaya_gbu_zhilischnik_rayona_fil_vskiy_park',
+        // Варианты с kotel_naya -> kotelnaya
+        'teplokotel_naya_voennyy_komissariat_g_moskvy': 'teplokotelnaya_voennyy_komissariat_g_moskvy',
+        'teplokotel_naya_voennyy_komissariat_szao_g_moskvy': 'teplokotelnaya_voennyy_komissariat_g_moskvy', // Используем данные без szao
+      };
+      
+      if (urlToChartIdMap[normalizedChartId]) {
+        normalizedChartId = urlToChartIdMap[normalizedChartId];
+        console.log(`[TeploChart] Нормализован URL: ${chartId} -> ${normalizedChartId}`);
+      }
+      
+      let info = chartDataMap.find(c => c.id === normalizedChartId);
+      
       if (!info) {
-        setLoading(false);
-        return;
+        // Пробуем найти по оригинальному chartId
+        info = chartDataMap.find(c => c.id === chartId);
+      }
+      
+      // Если график не найден в ChartDataMapper, создаем минимальную info из данных
+      if (!info) {
+        console.warn(`[TeploChart] График не найден в ChartDataMapper: ${chartId} (нормализованный: ${normalizedChartId}), пробуем загрузить данные напрямую`);
+        // Создаем минимальную info для работы с данными
+        info = {
+          id: normalizedChartId,
+          name: normalizedChartId.replace(/_/g, ' '),
+          path: `/${normalizedChartId}`,
+          dataType: 'reserve' as const,
+          dataLoader: () => Promise.resolve({}),
+          dataKey: undefined
+        };
+      }
+      
+      if (normalizedChartId !== chartId) {
+        console.log(`[TeploChart] Используем нормализованный chartId: ${normalizedChartId} вместо ${chartId}`);
       }
       
       setChartInfo(info);
       setLoading(true);
       
       try {
-        const module = await info.dataLoader();
-        let data: TeploDataItem[] = [];
+        // Используем прямые статические импорты, как в charts-demo 2
+        // Все данные уже импортированы в allChartsData.ts
+        // Используем нормализованный chartId для поиска данных
+        console.log(`[TeploChart] Загрузка данных для chartId: ${chartId}, normalized: ${normalizedChartId}, dataKey: ${info.dataKey || 'auto'}`);
         
-        console.log('Загрузка данных для chartId:', chartId);
-        console.log('dataKey из info:', info.dataKey);
-        console.log('Ключи в модуле:', Object.keys(module));
+        // Пробуем загрузить данные напрямую из allChartsData
+        let data = getChartData(normalizedChartId, info.dataKey || undefined);
         
-        if (info.dataKey && module[info.dataKey as keyof typeof module]) {
-          data = module[info.dataKey as keyof typeof module] as TeploDataItem[];
-          console.log('Данные найдены по dataKey:', info.dataKey, 'Количество:', data.length);
-        } else {
-          console.log('dataKey не найден, ищем данные вручную...');
-          // Пробуем найти данные в модуле
-          const dataKey = Object.keys(module).find(key => 
-            key.includes('Data') && 
-            !key.includes('default') &&
-            Array.isArray(module[key as keyof typeof module])
-          );
-          if (dataKey) {
-            console.log('Найден dataKey:', dataKey);
-            data = module[dataKey as keyof typeof module] as TeploDataItem[];
-          } else if (module.default && Array.isArray(module.default)) {
-            console.log('Используем default');
-            data = module.default;
-          } else {
-            // Пробуем найти любые массивы в модуле
-            const allKeys = Object.keys(module);
-            console.log('Все ключи модуля:', allKeys);
-            for (const key of allKeys) {
-              const value = module[key as keyof typeof module];
-              if (Array.isArray(value) && value.length > 0) {
-                console.log('Найден массив в ключе:', key, 'Длина:', value.length);
-                const firstItem = value[0];
-                if (firstItem && typeof firstItem === 'object' && ('year' in firstItem || 'value' in firstItem)) {
-                  data = value as TeploDataItem[];
-                  console.log('Используем данные из ключа:', key);
-                  break;
-                }
-              }
-            }
-          }
+        // Если не нашли, пробуем оригинальный chartId
+        if (!data || data.length === 0) {
+          data = getChartData(chartId, info.dataKey || undefined);
         }
         
         if (data && data.length > 0) {
-          console.log('Загружены данные:', data.length, 'записей');
-          console.log('Первая запись:', data[0]);
-          console.log('Все данные:', data);
-          setChartData(data);
+          console.log('✅ Данные найдены для chartId:', chartId, 'Количество:', data.length);
+          setChartData(data as TeploDataItem[]);
         } else {
-          console.error('Данные не найдены в модуле:', module);
-          console.error('Все ключи модуля:', Object.keys(module));
+          console.error('❌ Данные не найдены для chartId:', chartId, 'normalized:', normalizedChartId, 'dataKey:', info.dataKey);
+          // Пробуем загрузить через dataLoader как fallback
+          if (info.dataLoader) {
+            console.log('[TeploChart] Пробуем загрузить через dataLoader...');
+            try {
+              const module = await info.dataLoader();
+              if (module) {
+                const dataKey = info.dataKey || Object.keys(module).find(key => 
+                  key.includes('Data') && Array.isArray(module[key])
+                );
+                if (dataKey && module[dataKey]) {
+                  const fallbackData = module[dataKey];
+                  if (Array.isArray(fallbackData) && fallbackData.length > 0) {
+                    console.log('✅ Данные найдены через dataLoader:', fallbackData.length);
+                    setChartData(fallbackData as TeploDataItem[]);
+                  }
+                }
+              }
+            } catch (loaderError) {
+              console.error('Ошибка загрузки через dataLoader:', loaderError);
+            }
+          }
         }
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
@@ -110,72 +142,26 @@ export function TeploChart() {
   const isMobile = width < 600;
 
   // Определяем разрешение для получения дефолтных значений
-  const is276x155 = width >= 260 && width <= 285;
-  const is344x193 = width >= 340 && width <= 350;
-  const is900x250 = width > 500;
+  const resolution = detectResolution(width, height);
   
-  // Дефолтные конфигурации для teplo графиков
-  let defaultBaseFontSize = 13;
-  let defaultAxisFontSize = 12;
-  let defaultLegendFontSize = 14;
-  let defaultChartAreaLeft = "3%";
-  let defaultChartAreaRight = "3%";
-  let defaultChartAreaTop = "-25%";
-  let defaultChartAreaBottom = 20;
-  let defaultChartAreaHeight = "98%";
-  let defaultChartAreaWidth = "94%";
-  let defaultLegendLeftPadding = "3%";
-  let defaultLegendMarginTop = "20px";
-  let defaultAnnotationStemLength = 7.5;
-  let defaultVAxisGridlinesCount = 1;
-  let defaultChartContainerHeight = "250px"; // Для разрешения 900x250
+  // Получаем дефолтную конфигурацию из единого источника (как в превью)
+  // Всегда используем isTeplo=true для TeploChart
+  const defaultConfig = getDefaultConfig(resolution, true);
   
-  if (is276x155) {
-    defaultBaseFontSize = 9;
-    defaultAxisFontSize = 9;
-    defaultLegendFontSize = 10;
-    defaultChartAreaLeft = "5.1%";
-    defaultChartAreaRight = "5.7%";
-    defaultChartAreaTop = "-2.3%";
-    defaultChartAreaBottom = 60;
-    defaultChartAreaHeight = "97.2%";
-    defaultChartAreaWidth = "90%";
-    defaultLegendLeftPadding = "6%";
-    defaultLegendMarginTop = "-25px";
-    defaultAnnotationStemLength = 6;
-    defaultVAxisGridlinesCount = 1;
-    defaultChartContainerHeight = "151px";
-  } else if (is344x193) {
-    defaultBaseFontSize = 10;
-    defaultAxisFontSize = 10.5;
-    defaultLegendFontSize = 11;
-    defaultChartAreaLeft = "5%";
-    defaultChartAreaRight = "5%";
-    defaultChartAreaTop = "-10%";
-    defaultChartAreaBottom = 35;
-    defaultChartAreaHeight = "98%";
-    defaultChartAreaWidth = "94%";
-    defaultLegendLeftPadding = "5%";
-    defaultLegendMarginTop = "3px";
-    defaultAnnotationStemLength = 5;
-    defaultVAxisGridlinesCount = 1;
-    defaultChartContainerHeight = "151px";
-  } else if (is900x250) {
-    defaultBaseFontSize = 13;
-    defaultAxisFontSize = 14.5;
-    defaultLegendFontSize = 16;
-    defaultChartAreaLeft = "2.8%";
-    defaultChartAreaRight = "3%";
-    defaultChartAreaTop = "-25%";
-    defaultChartAreaBottom = 20;
-    defaultChartAreaHeight = "98%";
-    defaultChartAreaWidth = "94%";
-    defaultLegendLeftPadding = "3%";
-    defaultLegendMarginTop = "20px";
-    defaultAnnotationStemLength = 7.5;
-    defaultVAxisGridlinesCount = 1;
-    defaultChartContainerHeight = "250px"; // Для разрешения 900x250
-  }
+  // Дефолтные значения из единого источника
+  const defaultBaseFontSize = defaultConfig.baseFontSize;
+  const defaultAxisFontSize = defaultConfig.axisFontSize;
+  const defaultLegendFontSize = defaultConfig.legendFontSize;
+  const defaultChartAreaLeft = defaultConfig.chartAreaLeft;
+  const defaultChartAreaRight = defaultConfig.chartAreaRight;
+  const defaultChartAreaTop = defaultConfig.chartAreaTop;
+  const defaultChartAreaBottom = defaultConfig.chartAreaBottom;
+  const defaultChartAreaHeight = defaultConfig.chartAreaHeight;
+  const defaultChartAreaWidth = defaultConfig.chartAreaWidth;
+  const defaultLegendLeftPadding = defaultConfig.legendLeftPadding;
+  const defaultLegendMarginTop = defaultConfig.legendMarginTop;
+  const defaultAnnotationStemLength = defaultConfig.annotationStemLength;
+  const defaultChartContainerHeight = defaultConfig.chartContainerHeight;
 
   // Применяем сохраненные стили или используем дефолтные
   const baseFontSize = savedConfig?.baseFontSize ?? defaultBaseFontSize;
@@ -194,7 +180,7 @@ export function TeploChart() {
   
   const annotationStemLength = savedConfig?.annotationStemLength ?? defaultAnnotationStemLength;
   
-  const containerPaddingTop = savedConfig?.containerPaddingTop ?? (is276x155 ? "0%" : (is344x193 ? "1.4%" : "1.2%"));
+  const containerPaddingTop = savedConfig?.containerPaddingTop ?? defaultConfig.containerPaddingTop;
   const chartContainerHeight = savedConfig?.chartContainerHeight ?? defaultChartContainerHeight;
   
   // Логирование для отладки
@@ -254,6 +240,63 @@ export function TeploChart() {
     </div>
   );
 
+  // Вычисляем адаптивную шкалу ДО создания commonOptions
+  // Для balance графиков учитываем и total_net и load, для reserve - только reserve/value
+  const allValues = chartInfo?.dataType === 'balance'
+    ? [
+        ...chartData.map(d => (d as any).total_net).filter(v => v !== null && v !== undefined && !isNaN(v as number)),
+        ...chartData.map(d => (d as any).load).filter(v => v !== null && v !== undefined && !isNaN(v as number))
+      ] as number[]
+    : chartData.map(d => {
+        const val = d.value ?? d.reserve;
+        return typeof val === 'number' ? val : (val !== null && val !== undefined ? parseFloat(String(val)) : null);
+      }).filter(v => v !== null && v !== undefined && !isNaN(v as number)) as number[];
+  
+  const dataType = chartInfo?.dataType === 'reserve' ? 'reserve' : 'balance';
+  const adaptiveRange = allValues.length > 0 
+    ? calculateAdaptiveAxisRange(allValues, resolution, dataType)
+    : { min: 0, max: 2, gridlinesCount: 1 };
+  
+  // Используем значения из сохраненной конфигурации, если они есть (как в превью)
+  // Иначе вычисляем из данных
+  let vAxisMin: number;
+  let vAxisMax: number;
+  
+  // Если в конфигурации есть значения vAxisMin/vAxisMax, используем их
+  if (savedConfig?.vAxisMin !== undefined && savedConfig?.vAxisMax !== undefined) {
+    vAxisMin = savedConfig.vAxisMin;
+    vAxisMax = savedConfig.vAxisMax;
+  } else if (allValues.length > 0) {
+    // Иначе вычисляем из данных (как в превью)
+    const minValue = Math.min(...allValues);
+    const maxValue = Math.max(...allValues);
+    
+    if (dataType === 'reserve') {
+      // Для резервных графиков: округляем до сотен, точно как в превью
+      if (minValue === 0 && maxValue === 0) {
+        vAxisMin = -10;
+        vAxisMax = 10;
+      } else {
+        const minReserve = minValue;
+        const maxReserve = maxValue;
+        vAxisMin = Math.floor(minReserve / 100) * 100 - 100;
+        vAxisMax = Math.ceil(maxReserve / 100) * 100 + 100;
+      }
+    } else {
+      // Для балансовых графиков: округляем до десятков
+      vAxisMin = Math.floor(minValue / 10) * 10 - 10;
+      vAxisMax = Math.ceil(maxValue / 10) * 10 + 10;
+    }
+  } else {
+    // Fallback на адаптивную шкалу
+    vAxisMin = adaptiveRange.min;
+    vAxisMax = adaptiveRange.max;
+  }
+  
+  const vAxisGridlinesCount = savedConfig?.vAxisGridlinesCount !== undefined 
+    ? savedConfig.vAxisGridlinesCount 
+    : adaptiveRange.gridlinesCount;
+
   const commonOptions = {
     fontName: "Golos Text",
     fontSize: baseFontSize,
@@ -285,21 +328,24 @@ export function TeploChart() {
     },
     vAxis: {
       textStyle: { 
-        color: "#8E8E93", 
+        color: "transparent", 
         fontSize: axisFontSize, 
         bold: true 
       },
-      gridlines: { color: "#F2F2F7", count: savedConfig?.vAxisGridlinesCount ?? defaultVAxisGridlinesCount },
+      gridlines: { color: "#F2F2F7", count: vAxisGridlinesCount },
       baselineColor: "#E5E5EA",
-      baseline: { color: "#E5E5EA", lineWidth: 1 },
+      baseline: 0,
       viewWindowMode: "explicit" as const,
       format: "decimal",
-      ticks: [{ v: 0, f: "0" }] as any,
+      ticks: [0] as any,
+      // Убираем отступы для всех разрешений
+      textPosition: "none" as const,
+      titleTextStyle: { color: "transparent" },
     },
     titlePosition: "none",
     legend: { position: "none" },
     lineWidth: isTiny ? 2.5 : (isMobile ? 3 : 4),
-    pointSize: isTiny ? 3.6 : (isMobile ? 5.4 : 7.2),
+      pointSize: isTiny ? 3.6 : (isMobile ? 5.4 : 7.2),
     curveType: "function",
     annotations: {
       textStyle: {
@@ -358,13 +404,8 @@ export function TeploChart() {
     );
   }
 
-  // Вычисляем min и max для vAxis
-  const allValues = chartData.map(d => {
-    const val = typeof d.value === 'number' ? d.value : parseFloat(String(d.value));
-    return isNaN(val) ? 0 : val;
-  }).filter(v => v !== null && v !== undefined);
-  
-  if (allValues.length === 0) {
+  // Проверяем наличие данных
+  if (chartData.length === 0) {
     console.error('Нет валидных значений в данных');
     return (
       <div style={{ 
@@ -379,18 +420,6 @@ export function TeploChart() {
       </div>
     );
   }
-  
-  const minValue = Math.min(...allValues);
-  const maxValue = Math.max(...allValues);
-  // Не устанавливаем min: 0, если данные не начинаются с 0
-  const calculatedMin = minValue > 0 ? minValue * 0.95 : 0;
-  const calculatedMax = maxValue * 1.05; // Добавляем небольшой отступ сверху
-  const vAxisMin = savedConfig?.vAxisMin !== undefined ? savedConfig.vAxisMin : calculatedMin;
-  const vAxisMax = savedConfig?.vAxisMax !== undefined ? savedConfig.vAxisMax : calculatedMax;
-
-  console.log('Значения для графика:', allValues);
-  console.log('minValue:', minValue, 'maxValue:', maxValue);
-  console.log('vAxisMin:', vAxisMin, 'vAxisMax:', vAxisMax);
 
   const data1 = [
     [
@@ -400,17 +429,28 @@ export function TeploChart() {
     ],
     ...chartData.map((d, index) => {
       const year = String(d.year);
-      const value = typeof d.value === 'number' ? d.value : parseFloat(String(d.value));
-      const numValue = isNaN(value) ? 0 : value;
+      const rawValue = d.value ?? d.reserve;
+      const value = rawValue !== null && rawValue !== undefined 
+        ? (typeof rawValue === 'number' ? rawValue : parseFloat(String(rawValue)))
+        : null;
+      const numValue = value !== null && !isNaN(value) ? value : null;
       
       // Применяем логику экстремумов: показываем значение, если оно отличается от предыдущего или следующего
       let annotation = "";
-      const valueRounded = Math.round(numValue * 1000) / 1000;
-      const prevValue = index > 0 ? Math.round((chartData[index - 1].value || 0) * 1000) / 1000 : null;
-      const nextValue = index < chartData.length - 1 ? Math.round((chartData[index + 1].value || 0) * 1000) / 1000 : null;
-      
-      if (prevValue === null || nextValue === null || valueRounded !== prevValue || valueRounded !== nextValue) {
-        annotation = numValue.toFixed(3);
+      if (numValue !== null) {
+        const valueRounded = Math.round(numValue * 1000) / 1000;
+        const prevRaw = chartData[index - 1]?.value ?? chartData[index - 1]?.reserve;
+        const nextRaw = chartData[index + 1]?.value ?? chartData[index + 1]?.reserve;
+        const prevValue = index > 0 && prevRaw !== null && prevRaw !== undefined 
+          ? Math.round((typeof prevRaw === 'number' ? prevRaw : parseFloat(String(prevRaw))) * 1000) / 1000 
+          : null;
+        const nextValue = index < chartData.length - 1 && nextRaw !== null && nextRaw !== undefined
+          ? Math.round((typeof nextRaw === 'number' ? nextRaw : parseFloat(String(nextRaw))) * 1000) / 1000 
+          : null;
+        
+        if (prevValue === null || nextValue === null || valueRounded !== prevValue || valueRounded !== nextValue) {
+          annotation = numValue.toFixed(3);
+        }
       }
       
       return [
@@ -425,22 +465,27 @@ export function TeploChart() {
 
   const options1 = {
     ...commonOptions,
+    interpolateNulls: false, // Не соединять линии через null значения
     series: {
       0: { 
         color: "#FF9500", 
         pointShape: "circle", 
         areaOpacity: 0.15,
+        pointSize: isTiny ? 3.6 : (isMobile ? 5.4 : 7.2),
       },
     },
     vAxis: {
       ...commonOptions.vAxis,
-      viewWindow: { min: vAxisMin, max: vAxisMax },
+      viewWindow: { min: Math.min(0, vAxisMin), max: vAxisMax },
       gridlines: { 
         color: "#F2F2F7", 
-        count: savedConfig?.vAxisGridlinesCount ?? defaultVAxisGridlinesCount,
+        count: vAxisGridlinesCount,
       },
       format: "decimal",
       ticks: [{ v: 0, f: "0" }] as any,
+      // Убираем отступы для всех разрешений
+      textPosition: "none" as const,
+      titleTextStyle: { color: "transparent" },
     },
   };
 

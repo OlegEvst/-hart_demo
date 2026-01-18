@@ -48,5 +48,10 @@ export const balanceKozhukhovoNewData = [
     "year": "2034",
     "total_net": 264.8,
     "load": 0
+  },
+  {
+    "year": "2035",
+    "total_net": 0,
+    "load": 0
   }
 ];

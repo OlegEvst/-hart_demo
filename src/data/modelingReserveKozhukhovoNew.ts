@@ -38,5 +38,9 @@ export const modelingReserveKozhukhovoNewData = [
   {
     "year": "2034",
     "reserve": 265
+  },
+  {
+    "year": "2035",
+    "reserve": 0
   }
 ];
