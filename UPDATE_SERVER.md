@@ -1,28 +1,43 @@
 # Обновление на сервере
 
-## Быстрое обновление (2-3 команды)
+## Шаг 1: Найти проект
+```bash
+# Ищем папку с проектом
+find / -name "charts-demo" -type d 2>/dev/null
+# или
+ls -la /root/
+ls -la /var/www/
+ls -la /home/
+```
+
+## Шаг 2: Обновить проект (2-3 команды)
 
 ```bash
+# Перейти в папку проекта (замените путь на ваш)
+cd /path/to/charts-demo
+
 # 1. Обновить код из git
 git pull
 
 # 2. Пересобрать проект (если были изменения в коде)
 npm run build
 
-# 3. Перезапустить сервер
-cd server && npm start
-# или если используется PM2:
+# 3. Перезапустить сервер (если используется PM2)
 pm2 restart charts-demo
+# или если запущен напрямую:
+cd server && npm start
 ```
 
-## Минимальная версия (если только данные обновились)
+## Минимальная версия (одна строка)
 
 ```bash
-git pull && cd server && npm start
+cd /path/to/charts-demo && git pull && npm run build && pm2 restart charts-demo
 ```
 
-## Если сервер уже запущен (PM2)
+## Проверка статуса PM2
 
 ```bash
-git pull && npm run build && pm2 restart charts-demo
+pm2 list          # Список процессов
+pm2 logs          # Логи
+pm2 status        # Статус
 ```
