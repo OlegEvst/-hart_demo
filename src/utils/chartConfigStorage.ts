@@ -19,28 +19,45 @@ async function loadConfigsJson(): Promise<void> {
   
   configsJsonLoading = true;
   try {
-    const response = await fetch('/configs.json', {
+    // В production используем абсолютный путь с текущим origin
+    const configsUrl = import.meta.env.PROD 
+      ? `${window.location.origin}/configs.json`
+      : '/configs.json';
+    
+    const response = await fetch(configsUrl, {
       cache: 'no-store', // Не кэшируем, всегда загружаем актуальную версию
     });
+    
     if (response.ok) {
-      const data = await response.json();
-      configsJsonData = data;
-      configsJsonLoaded = true;
-      const count = Object.keys(data).length;
-      console.log(`[ConfigStorage] ✓ Загружен configs.json (единый источник данных), записей: ${count}`);
-      
-      // Проверяем пример конфигурации для отладки
-      const exampleKey = Object.keys(data).find(k => k.includes('teploait_1_abv_sokolovo') && k.includes('900x250'));
-      if (exampleKey && data[exampleKey]) {
-        const ex = data[exampleKey];
-        console.log(`[ConfigStorage] Пример конфигурации (${exampleKey}): vAxisMin=${ex.config?.vAxisMin}, vAxisMax=${ex.config?.vAxisMax}`);
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        configsJsonData = data;
+        configsJsonLoaded = true;
+        const count = Object.keys(data).length;
+        console.log(`[ConfigStorage] ✓ Загружен configs.json (единый источник данных), записей: ${count}`);
+      } else {
+        // Если получили не JSON (например, HTML), значит endpoint не работает
+        console.warn(`[ConfigStorage] ⚠ configs.json вернул не JSON (${contentType}), используем API для загрузки конфигураций`);
+        configsJsonLoaded = true; // Помечаем как загруженный, чтобы не пытаться снова
+        configsJsonData = null; // Не используем невалидные данные
       }
     } else {
-      console.error(`[ConfigStorage] ❌ configs.json не найден (HTTP ${response.status}), будут использоваться дефолтные конфигурации`);
+      // В production, если configs.json недоступен, это нормально - используем API
+      if (import.meta.env.PROD) {
+        console.log(`[ConfigStorage] configs.json недоступен (HTTP ${response.status}), используем API`);
+      } else {
+        console.warn(`[ConfigStorage] ⚠ configs.json не найден (HTTP ${response.status}), будут использоваться дефолтные конфигурации`);
+      }
       configsJsonLoaded = true; // Помечаем как загруженный, чтобы не пытаться снова
     }
   } catch (error) {
-    console.error('[ConfigStorage] ❌ Ошибка загрузки configs.json:', error);
+    // В production это не критично - используем API
+    if (import.meta.env.PROD) {
+      console.log('[ConfigStorage] configs.json недоступен, используем API для загрузки конфигураций');
+    } else {
+      console.warn('[ConfigStorage] ⚠ Ошибка загрузки configs.json:', error);
+    }
     configsJsonLoaded = true; // Помечаем как загруженный, чтобы не пытаться снова
   } finally {
     configsJsonLoading = false;
@@ -144,29 +161,12 @@ export async function loadChartConfig(chartId: string, resolution: '276x155' | '
           configCache[key] = savedConfig;
           console.log(`[ConfigStorage] ✓ Загружена конфигурация из configs.json для ${normalizedChartId} (${resolution})`);
           return savedConfig.config;
-        } else {
-          console.warn(`[ConfigStorage] ⚠ Конфигурация не найдена в configs.json для ${normalizedChartId} (${resolution}), ключ: ${configKey}`);
         }
-      } else {
-        console.warn(`[ConfigStorage] ⚠ configs.json не загружен, пробуем localStorage для ${normalizedChartId} (${resolution})`);
       }
       
-      // Fallback на localStorage (только если configs.json не загружен)
-      const localStorageKey = `${STORAGE_KEY_PREFIX}${normalizedChartId}_${resolution}`;
-      let saved = localStorage.getItem(localStorageKey);
-      if (!saved && normalizedChartId !== chartId) {
-        saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}${chartId}_${resolution}`);
-      }
-      if (saved) {
-        const savedConfig: SavedChartConfig = JSON.parse(saved);
-        configCache[key] = savedConfig;
-        console.log(`[ConfigStorage] ⚠ Использована конфигурация из localStorage (configs.json не загружен) для ${normalizedChartId} (${resolution})`);
-        return savedConfig.config;
-      }
-      
-      // В production без конфигурации возвращаем null (будет использован дефолт)
-      console.warn(`[ConfigStorage] ⚠ Конфигурация не найдена, будет использован дефолт для ${normalizedChartId} (${resolution})`);
-      return null;
+      // Если configs.json не загружен или не содержит конфигурацию, используем API
+      // Это нормально для production - используем API вместо статического файла
+      return null; // Вернем null, чтобы использовать API ниже
     }
     
     // В development: загружаем через API (который читает server/storage/configs.json)
