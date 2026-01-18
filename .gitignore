@@ -57,8 +57,12 @@ credentials.json
 # Server uploads and storage
 server/uploads/*
 !server/uploads/.gitkeep
+# server/storage/* - РАЗРЕШЕНО для развертывания (актуальные данные нужны на сервере)
 server/storage/*
 !server/storage/.gitkeep
+!server/storage/configs.json
+!server/storage/history.json
+!server/storage/statuses.json
 deploy/server/uploads/*
 !deploy/server/uploads/.gitkeep
 deploy/server/storage/*
