@@ -138,35 +138,50 @@ export async function loadChartConfig(chartId: string, resolution: '276x155' | '
   const key = `${normalizedChartId}_${resolution}`;
   
   try {
-    // Единый источник данных: configs.json
+    // В production на сервере: используем API (как и в development)
+    // Статический configs.json используется только в чисто статической сборке (без сервера)
+    // Но у нас есть сервер, поэтому используем API
     if (import.meta.env.PROD) {
-      // В production: загружаем из /configs.json
-      // Убеждаемся, что configs.json загружен (ждем загрузки)
-      if (!configsJsonLoaded && !configsJsonLoading) {
-        await loadConfigsJson();
-      }
-      
-      // Ждем завершения загрузки, если она еще идет
-      let attempts = 0;
-      while (configsJsonLoading && attempts < 50) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-      }
-      
-      // Если configs.json загружен, используем его (ЕДИНСТВЕННЫЙ ИСТОЧНИК)
-      if (configsJsonData) {
-        const configKey = `${normalizedChartId}_${resolution}`;
-        const savedConfig = configsJsonData[configKey];
-        if (savedConfig && savedConfig.config) {
-          configCache[key] = savedConfig;
-          console.log(`[ConfigStorage] ✓ Загружена конфигурация из configs.json для ${normalizedChartId} (${resolution})`);
-          return savedConfig.config;
+      // Проверяем, есть ли доступ к API (на сервере API доступен)
+      // Пробуем загрузить через API
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/charts/${normalizedChartId}/config/${resolution}`);
+        
+        if (response.ok) {
+          const result = await response.json();
+          
+          // Если сервер вернул конфигурацию
+          if (result && result.config) {
+            const savedConfig: SavedChartConfig = result;
+            configCache[key] = savedConfig;
+            return savedConfig.config;
+          }
+        }
+      } catch (apiError) {
+        // Если API недоступен, пробуем статический configs.json
+        // (для чисто статической сборки)
+        if (!configsJsonLoaded && !configsJsonLoading) {
+          await loadConfigsJson();
+        }
+        
+        let attempts = 0;
+        while (configsJsonLoading && attempts < 50) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          attempts++;
+        }
+        
+        if (configsJsonData) {
+          const configKey = `${normalizedChartId}_${resolution}`;
+          const savedConfig = configsJsonData[configKey];
+          if (savedConfig && savedConfig.config) {
+            configCache[key] = savedConfig;
+            return savedConfig.config;
+          }
         }
       }
       
-      // Если configs.json не загружен или не содержит конфигурацию, используем API
-      // Это нормально для production - используем API вместо статического файла
-      return null; // Вернем null, чтобы использовать API ниже
+      // Если ни API, ни configs.json не доступны, возвращаем null (будет использован дефолт)
+      return null;
     }
     
     // В development: загружаем через API (который читает server/storage/configs.json)
