@@ -308,17 +308,29 @@ export function TeploChart() {
     let configMax = savedConfig.vAxisMax;
     
     // Если min > max, это ошибка в данных - исправляем
+    // ВАЖНО: Исправляем ДО присваивания, чтобы гарантировать правильный порядок
     if (configMin > configMax) {
       console.warn(`[TeploChart] ⚠ ОШИБКА В КОНФИГУРАЦИИ для ${chartId}: vAxisMin (${configMin}) > vAxisMax (${configMax}), исправляем`);
       // Меняем местами
       const temp = configMin;
       configMin = configMax;
       configMax = temp;
-      console.warn(`[TeploChart] Исправлено: vAxisMin=${configMin}, vAxisMax=${configMax}`);
+      console.warn(`[TeploChart] ✓ Исправлено: vAxisMin=${configMin}, vAxisMax=${configMax}`);
     }
     
+    // Присваиваем исправленные значения (гарантируем, что min <= max)
     vAxisMin = configMin;
     vAxisMax = configMax;
+    
+    // ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: убеждаемся, что после всех исправлений min <= max
+    if (vAxisMin > vAxisMax) {
+      console.error(`[TeploChart] ❌ КРИТИЧЕСКАЯ ОШИБКА: После исправления vAxisMin (${vAxisMin}) все еще > vAxisMax (${vAxisMax}) для ${chartId}`);
+      // Принудительно исправляем еще раз
+      const temp = vAxisMin;
+      vAxisMin = vAxisMax;
+      vAxisMax = temp;
+      console.error(`[TeploChart] ✓ Принудительно исправлено: vAxisMin=${vAxisMin}, vAxisMax=${vAxisMax}`);
+    }
     console.log(`[TeploChart] ✓ Используются значения из конфигурации (как в превью): vAxisMin=${vAxisMin}, vAxisMax=${vAxisMax} для ${chartId}`);
   } else {
     // Если конфигурация не загружена, это проблема
