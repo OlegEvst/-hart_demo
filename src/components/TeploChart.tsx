@@ -291,45 +291,30 @@ export function TeploChart() {
     return null;
   }
   
-  // ВАЖНО: Всегда используем значения из сохраненной конфигурации (как в админке)
-  // Если конфигурация не загружена, ждем её загрузки, а не вычисляем из данных
-  // Это гарантирует, что статичная сборка использует те же стили, что админка
+  // КРИТИЧЕСКИ ВАЖНО: Используем ТОЛЬКО значения из сохраненной конфигурации (как в превью админки)
+  // НИКОГДА не вычисляем из данных - это гарантирует 1 в 1 совпадение с превью
+  // В превью админки используется ТОЛЬКО chartConfig.vAxisMin/vAxisMax из конфигурации
+  // Здесь делаем ТОЧНО ТАК ЖЕ - используем ТОЛЬКО savedConfig.vAxisMin/vAxisMax
   let vAxisMin: number;
   let vAxisMax: number;
   
-  // Если в конфигурации есть значения vAxisMin/vAxisMax, ВСЕГДА используем их
-  // Это единственный источник данных (как в админке)
+  // ВАЖНО: В превью админки используется ТОЛЬКО chartConfig.vAxisMin/vAxisMax из конфигурации
+  // Здесь делаем ТОЧНО ТАК ЖЕ - используем ТОЛЬКО savedConfig.vAxisMin/vAxisMax
   if (savedConfig?.vAxisMin !== undefined && savedConfig?.vAxisMax !== undefined) {
+    // Используем значения из конфигурации (как в превью админки)
     vAxisMin = savedConfig.vAxisMin;
     vAxisMax = savedConfig.vAxisMax;
-    console.log(`[TeploChart] Используются значения из конфигурации: vAxisMin=${vAxisMin}, vAxisMax=${vAxisMax}`);
-  } else if (allValues.length > 0) {
-    // Только если конфигурация не загружена, вычисляем из данных (временное решение)
-    console.warn(`[TeploChart] Конфигурация не загружена для ${chartId}, вычисляем из данных (это не должно происходить в production)`);
-    // Иначе вычисляем из данных (как в превью)
-    const minValue = Math.min(...allValues);
-    const maxValue = Math.max(...allValues);
-    
-    if (dataType === 'reserve') {
-      // Для резервных графиков: округляем до сотен, точно как в превью
-      if (minValue === 0 && maxValue === 0) {
-        vAxisMin = -10;
-        vAxisMax = 10;
-      } else {
-        const minReserve = minValue;
-        const maxReserve = maxValue;
-        vAxisMin = Math.floor(minReserve / 100) * 100 - 100;
-        vAxisMax = Math.ceil(maxReserve / 100) * 100 + 100;
-      }
-    } else {
-      // Для балансовых графиков: округляем до десятков
-      vAxisMin = Math.floor(minValue / 10) * 10 - 10;
-      vAxisMax = Math.ceil(maxValue / 10) * 10 + 10;
-    }
+    console.log(`[TeploChart] ✓ Используются значения из конфигурации (как в превью): vAxisMin=${vAxisMin}, vAxisMax=${vAxisMax}`);
   } else {
-    // Fallback на адаптивную шкалу
+    // Если конфигурация не загружена, это проблема
+    // В production мы уже проверили выше и не рендерим до загрузки
+    // В development используем дефолтные значения (но это не должно происходить)
+    console.error(`[TeploChart] ❌ КРИТИЧЕСКАЯ ОШИБКА: Конфигурация не загружена для ${chartId}, но пытаемся рендерить!`);
+    console.error(`[TeploChart] savedConfig:`, savedConfig);
+    // Используем дефолтные значения из адаптивной шкалы (fallback)
     vAxisMin = adaptiveRange.min;
     vAxisMax = adaptiveRange.max;
+    console.warn(`[TeploChart] ⚠ Используются fallback значения: vAxisMin=${vAxisMin}, vAxisMax=${vAxisMax}`);
   }
   
   const vAxisGridlinesCount = savedConfig?.vAxisGridlinesCount !== undefined 
