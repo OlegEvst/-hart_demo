@@ -1603,26 +1603,33 @@ app.get('/api/generate-static-archive', async (req, res) => {
       delete fileWriteLocks[CONFIGS_FILE];
     }
     
-    if (fs.existsSync(configsPath)) {
-      // Проверяем размер и содержимое файла для подтверждения
-      const stats = fs.statSync(configsPath);
-      const fileContent = fs.readFileSync(configsPath, 'utf-8');
-      const configsData = JSON.parse(fileContent);
-      const configsCount = Object.keys(configsData).length;
+    // Добавляем configs.json НАПРЯМУЮ из памяти (chartConfigs) - гарантируем 1:1 с превью
+    // НЕ читаем из файла, чтобы избежать рассинхронизации
+    try {
+      // Используем ТОЧНО те же данные, что использует админка для превью (из памяти)
+      const configsForArchive = JSON.stringify(chartConfigs, null, 2);
+      const configsCount = Object.keys(chartConfigs).length;
       
-      console.log(`✓ configs.json найден, размер: ${(stats.size / 1024).toFixed(2)} KB, записей: ${configsCount}`);
+      // Добавляем configs.json напрямую в архив из памяти (не из файла)
+      archive.append(configsForArchive, { name: 'configs.json' });
       
       // Проверяем пример для подтверждения актуальности
-      const exampleKey = Object.keys(configsData).find(k => k.includes('teploait_1_abv_sokolovo') && k.includes('900x250'));
-      if (exampleKey && configsData[exampleKey]) {
-        const ex = configsData[exampleKey];
+      const exampleKey = Object.keys(chartConfigs).find(k => k.includes('teploait_1_abv_sokolovo') && k.includes('900x250'));
+      if (exampleKey && chartConfigs[exampleKey]) {
+        const ex = chartConfigs[exampleKey];
         console.log(`✓ Проверка актуальности (${exampleKey}): vAxisMin=${ex.config?.vAxisMin}, vAxisMax=${ex.config?.vAxisMax}`);
       }
       
-      archive.file(configsPath, { name: 'configs.json' });
-      console.log('✓ Добавлен актуальный configs.json в архив (единый источник данных)');
-    } else {
-      console.error('❌ configs.json не найден! Архив будет создан без конфигураций.');
+      console.log(`✓ Добавлен configs.json в архив НАПРЯМУЮ из памяти (chartConfigs) - ${configsCount} записей, ТОЧНО те же данные, что использует админка для превью`);
+    } catch (err) {
+      console.error('❌ Ошибка добавления configs.json в архив:', err);
+      // Fallback: пробуем добавить из файла
+      if (fs.existsSync(configsPath)) {
+        archive.file(configsPath, { name: 'configs.json' });
+        console.warn('⚠ Добавлен configs.json из файла (fallback)');
+      } else {
+        console.error('❌ configs.json не найден! Архив будет создан без конфигураций.');
+      }
     }
     
     // Добавляем .htaccess (из статичной папки или создаем базовый)
