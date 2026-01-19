@@ -33,9 +33,34 @@ export function TeploChart() {
   const [loading, setLoading] = useState(true);
   const [chartInfo, setChartInfo] = useState<ChartDataInfo | null>(null);
   
-  // Используем chartId напрямую для загрузки стилей (без префикса пути)
-  // Это гарантирует, что ключи совпадают с теми, что используются в конструкторе
-  const savedConfig = useSavedChartConfig(chartId || '', width, height);
+  // ВАЖНО: Нормализуем chartId для загрузки стилей (как для данных)
+  // Это гарантирует, что ключи совпадают с теми, что используются в конструкторе и configs.json
+  const normalizeChartId = (id: string): string => {
+    if (!id) return id;
+    // Нормализуем chartId: заменяем elektrops на electricps
+    let normalized = id.replace(/^elektrops/, 'electricps');
+    
+    // Нормализация для известных несоответствий URL и chartId
+    const urlToChartIdMap: Record<string, string> = {
+      // Варианты с szao -> без szao (если данных нет для варианта с szao, используем данные без szao)
+      'teplokotelnaya_voennyy_komissariat_szao_g_moskvy': 'teplokotelnaya_voennyy_komissariat_g_moskvy', // Используем данные без szao
+      'teplokotelnaya_gbu_zhilischnik_rayona_filevskiy_park': 'teplokotelnaya_gbu_zhilischnik_rayona_fil_vskiy_park',
+      // Варианты с kotel_naya -> kotelnaya
+      'teplokotel_naya_voennyy_komissariat_g_moskvy': 'teplokotelnaya_voennyy_komissariat_g_moskvy',
+      'teplokotel_naya_voennyy_komissariat_szao_g_moskvy': 'teplokotelnaya_voennyy_komissariat_g_moskvy', // Используем данные без szao
+    };
+    
+    if (urlToChartIdMap[normalized]) {
+      normalized = urlToChartIdMap[normalized];
+    }
+    
+    return normalized;
+  };
+  
+  // Используем нормализованный chartId для загрузки стилей
+  // Это гарантирует, что ключи совпадают с теми, что используются в конструкторе и configs.json
+  const normalizedChartIdForStyles = normalizeChartId(chartId || '');
+  const savedConfig = useSavedChartConfig(normalizedChartIdForStyles, width, height);
   
   useEffect(() => {
     const loadData = async () => {
