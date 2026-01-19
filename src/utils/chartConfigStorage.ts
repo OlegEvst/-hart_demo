@@ -137,12 +137,13 @@ export async function loadChartConfig(chartId: string, resolution: '276x155' | '
   } catch (error) {
     // Если произошла ошибка сети при запросе к API, пробуем configs.json
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.warn(`[ConfigStorage] ⚠ Ошибка запроса к API (${apiUrl}):`, errorMessage);
+    const apiUrlForLog = `${API_BASE_URL}/api/charts/${normalizedChartId}/config/${resolution}`;
+    console.warn(`[ConfigStorage] ⚠ Ошибка запроса к API (${apiUrlForLog}):`, errorMessage);
     
     // Если ошибка "Unexpected token '<'" - это значит сервер вернул HTML вместо JSON
     // Это может быть из-за неправильного URL или проблем с роутингом
     if (errorMessage.includes("Unexpected token '<'")) {
-      console.warn(`[ConfigStorage] ⚠ Сервер вернул HTML вместо JSON для ${apiUrl}, пробуем configs.json`);
+      console.warn(`[ConfigStorage] ⚠ Сервер вернул HTML вместо JSON для ${apiUrlForLog}, пробуем configs.json`);
     }
     
     try {
