@@ -1458,20 +1458,35 @@ app.get('/api/generate-static-archive', async (req, res) => {
       }
     }
     
-    // Добавляем index.html
-    archive.file(indexHtmlPath, { name: 'index.html' });
-    console.log('Добавлен index.html');
+    // Добавляем все файлы из dist (рекурсивно)
+    const addDirectoryToArchive = (dirPath, archivePrefix = '') => {
+      const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dirPath, entry.name);
+        const archivePath = archivePrefix ? `${archivePrefix}/${entry.name}` : entry.name;
+        
+        // Пропускаем configs.json (добавляется отдельно выше)
+        if (entry.name === 'configs.json') {
+          continue;
+        }
+        
+        if (entry.isDirectory()) {
+          // Пропускаем node_modules и другие служебные папки
+          if (entry.name === 'node_modules' || (entry.name.startsWith('.') && entry.name !== '.htaccess')) {
+            continue;
+          }
+          addDirectoryToArchive(fullPath, archivePath);
+        } else if (entry.isFile()) {
+          archive.file(fullPath, { name: archivePath });
+          console.log(`✓ Добавлен файл: ${archivePath}`);
+        }
+      }
+    };
     
-    // Добавляем всю папку assets
-    archive.directory(distAssetsPath, 'assets');
-    console.log('Добавлена папка assets');
-    
-    // Добавляем vite.svg если есть
-    const viteSvgPath = path.join(distPath, 'vite.svg');
-    if (fs.existsSync(viteSvgPath)) {
-      archive.file(viteSvgPath, { name: 'vite.svg' });
-      console.log('Добавлен vite.svg');
-    }
+    // Добавляем все файлы из dist (кроме configs.json, который добавляется отдельно)
+    console.log('Добавление всех файлов из dist...');
+    addDirectoryToArchive(distPath);
+    console.log('✓ Все файлы из dist добавлены в архив');
     
     // Завершаем архив
     await archive.finalize();
