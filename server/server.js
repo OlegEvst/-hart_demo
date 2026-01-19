@@ -970,6 +970,11 @@ let chartStatuses = loadFromFile(STATUSES_FILE, {});
 // Хранилище конфигураций графиков (загружаем из файла при старте)
 let chartConfigs = loadFromFile(CONFIGS_FILE, {});
 
+// ВАЖНО: После загрузки из файла перезагружаем конфигурации из файла в память
+// Это гарантирует, что API всегда возвращает актуальные данные из файла
+// (на случай если файл был обновлен после старта сервера)
+console.log(`Загружено ${Object.keys(chartConfigs).length} конфигураций из ${CONFIGS_FILE}`);
+
 // Хранилище истории изменений (загружаем из файла при старте)
 let chartHistory = loadFromFile(HISTORY_FILE, []);
 
@@ -1140,20 +1145,22 @@ app.get('/api/charts/:chartId/config/:resolution', (req, res) => {
     const key = `${chartId}_${resolution}`;
     let savedConfig = chartConfigs[key];
     
-    // Если конфигурация не найдена в памяти, пробуем перезагрузить из файла
-    // (на случай если файл был обновлен после старта сервера)
-    if (!savedConfig) {
-      try {
-        const fileData = loadFromFile(CONFIGS_FILE, {});
-        if (fileData[key]) {
-          // Обновляем память из файла
-          chartConfigs[key] = fileData[key];
-          savedConfig = fileData[key];
-          console.log(`[API] Конфигурация ${key} перезагружена из файла в память`);
-        }
-      } catch (fileError) {
-        console.warn(`[API] Не удалось перезагрузить конфигурацию из файла:`, fileError);
+    // ВАЖНО: Всегда перезагружаем из файла перед возвратом
+    // Это гарантирует, что API возвращает самые актуальные данные из файла
+    // (которые могут быть обновлены через админку)
+    try {
+      const fileData = loadFromFile(CONFIGS_FILE, {});
+      if (fileData[key]) {
+        // Обновляем память из файла (актуальные данные)
+        chartConfigs[key] = fileData[key];
+        savedConfig = fileData[key];
+      } else if (savedConfig) {
+        // Если в файле нет, но есть в памяти - оставляем в памяти
+        // (может быть новая конфигурация, еще не сохраненная)
       }
+    } catch (fileError) {
+      console.warn(`[API] Не удалось перезагрузить конфигурацию из файла:`, fileError);
+      // Если ошибка чтения файла, используем данные из памяти
     }
     
     // Если конфигурация не найдена, возвращаем 200 с null
