@@ -74,8 +74,19 @@ export function useSavedChartConfig(pathOrChartId: string, width: number, height
         }
       }
       
-      // Если конфигурация найдена, используем её, иначе используем дефолтную
-      const finalConfig: ChartConfig = config || getDefaultConfig(resolution, isTeploChart);
+      // ВАЖНО: Если конфигурация не найдена, это проблема - нужно использовать сохраненную
+      // Не используем дефолтную конфигурацию, если есть сохраненная в configs.json
+      // Дефолтная используется только если конфигурации вообще нет
+      let finalConfig: ChartConfig;
+      if (config) {
+        // Используем сохраненную конфигурацию (из API или configs.json)
+        finalConfig = config;
+        console.log(`[useSavedChartConfig] Используется сохраненная конфигурация для ${chartId} (${resolution})`);
+      } else {
+        // Только если конфигурации нет вообще, используем дефолтную
+        finalConfig = getDefaultConfig(resolution, isTeploChart);
+        console.warn(`[useSavedChartConfig] Конфигурация не найдена для ${chartId} (${resolution}), используется дефолтная`);
+      }
       
       // Фиксируем параметры легенды из дефолтной конфигурации
       const defaultConfig = getDefaultConfig(resolution, isTeploChart);
