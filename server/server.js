@@ -1463,26 +1463,37 @@ app.get('/api/generate-static-archive', async (req, res) => {
     }
     
     // Добавляем все файлы из dist (рекурсивно)
-    const addDirectoryToArchive = (dirPath, archivePrefix = '') => {
+    const addDirectoryToArchive = (dirPath, archivePrefix = '', skipPatterns = []) => {
+      if (!fs.existsSync(dirPath)) {
+        console.warn(`⚠ Путь не существует: ${dirPath}`);
+        return;
+      }
+      
       const entries = fs.readdirSync(dirPath, { withFileTypes: true });
       for (const entry of entries) {
         const fullPath = path.join(dirPath, entry.name);
         const archivePath = archivePrefix ? `${archivePrefix}/${entry.name}` : entry.name;
         
-        // Пропускаем configs.json (добавляется отдельно выше)
-        if (entry.name === 'configs.json') {
-          continue;
+        // Пропускаем файлы по паттернам
+        let shouldSkip = false;
+        for (const pattern of skipPatterns) {
+          if (typeof pattern === 'string' && entry.name === pattern) {
+            shouldSkip = true;
+            break;
+          } else if (pattern instanceof RegExp && pattern.test(entry.name)) {
+            shouldSkip = true;
+            break;
+          }
         }
+        if (shouldSkip) continue;
         
         if (entry.isDirectory()) {
-          // Пропускаем node_modules и другие служебные папки (но не .htaccess)
-          if (entry.name === 'node_modules' || (entry.name.startsWith('.') && entry.name !== '.htaccess')) {
+          // Пропускаем только .git
+          if (entry.name === '.git') {
             continue;
           }
-          addDirectoryToArchive(fullPath, archivePath);
+          addDirectoryToArchive(fullPath, archivePath, skipPatterns);
         } else if (entry.isFile()) {
-          // Пропускаем .htaccess если он уже был добавлен отдельно выше
-          // Но если его нет в dist, он будет добавлен из других источников выше
           archive.file(fullPath, { name: archivePath });
           console.log(`✓ Добавлен файл: ${archivePath}`);
         }
@@ -1490,10 +1501,58 @@ app.get('/api/generate-static-archive', async (req, res) => {
     };
     
     // Добавляем все файлы из dist (кроме configs.json, который добавляется отдельно)
-    // .htaccess добавляется отдельно выше, но если он есть в dist, он будет добавлен и здесь (дублирование не критично)
     console.log('Добавление всех файлов из dist...');
-    addDirectoryToArchive(distPath);
+    addDirectoryToArchive(distPath, '', ['configs.json']);
     console.log('✓ Все файлы из dist добавлены в архив');
+    
+    // Добавляем исходные файлы проекта для полной работоспособности
+    console.log('Добавление исходных файлов проекта...');
+    
+    // Конфигурационные файлы
+    const configFiles = [
+      'package.json',
+      'package-lock.json',
+      'vite.config.ts',
+      'tsconfig.json',
+      'tsconfig.app.json',
+      'tsconfig.node.json',
+    ];
+    
+    for (const configFile of configFiles) {
+      const configPath = path.join(PROJECT_ROOT, configFile);
+      if (fs.existsSync(configPath)) {
+        archive.file(configPath, { name: configFile });
+        console.log(`✓ Добавлен файл: ${configFile}`);
+      } else {
+        console.warn(`⚠ Файл не найден: ${configFile}`);
+      }
+    }
+    
+    // Папка src (исходный код)
+    const srcPath = path.join(PROJECT_ROOT, 'src');
+    if (fs.existsSync(srcPath)) {
+      addDirectoryToArchive(srcPath, 'src', []);
+      console.log('✓ Добавлена папка src');
+    }
+    
+    // Папка public (публичные файлы)
+    const publicPath = path.join(PROJECT_ROOT, 'public');
+    if (fs.existsSync(publicPath)) {
+      addDirectoryToArchive(publicPath, 'public', []);
+      console.log('✓ Добавлена папка public');
+    }
+    
+    // node_modules (зависимости)
+    const nodeModulesPath = path.join(PROJECT_ROOT, 'node_modules');
+    if (fs.existsSync(nodeModulesPath)) {
+      console.log('Добавление node_modules (это может занять время)...');
+      addDirectoryToArchive(nodeModulesPath, 'node_modules', []);
+      console.log('✓ Добавлена папка node_modules');
+    } else {
+      console.warn('⚠ node_modules не найдена - зависимости нужно будет установить через npm install');
+    }
+    
+    console.log('✓ Все исходные файлы проекта добавлены в архив');
     
     // Завершаем архив
     await archive.finalize();
