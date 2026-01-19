@@ -1912,6 +1912,11 @@ export function GraphBuilder() {
         <Dialog
           open={jsonFullscreen}
           onClose={() => setJsonFullscreen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setJsonFullscreen(false);
+            }
+          }}
           maxWidth={false}
           fullWidth
           PaperProps={{
@@ -1946,6 +1951,12 @@ export function GraphBuilder() {
               fullWidth
               value={jsonConfig}
               onChange={(e) => handleJsonChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  e.preventDefault();
+                  setJsonFullscreen(false);
+                }
+              }}
               error={!!jsonError}
               sx={{
                 flex: 1,
