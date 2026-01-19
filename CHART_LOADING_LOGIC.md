@@ -1,5 +1,25 @@
 # Логика загрузки и формирования графика
 
+## Упрощенная логика (обновлено)
+
+### При создании статичной сборки:
+1. **Скачивание configs.json с сервера** (перед сборкой):
+   - Запускается скрипт `scripts/download-configs.js`
+   - Скачивает актуальный `configs.json` с сервера (`http://localhost:3001/configs.json`)
+   - Сохраняет в `public/configs.json` (попадает в `dist/` при сборке)
+
+2. **Сборка проекта**:
+   - `npm run build:static` → скачивает configs.json → собирает проект
+   - `configs.json` из `public/` копируется в `dist/` автоматически
+
+### В статичной сборке (production):
+- **ТОЛЬКО configs.json** - никаких API вызовов
+- Все конфигурации уже в `configs.json` (скачанном при сборке)
+
+### В development (с сервером):
+- **ТОЛЬКО API endpoint** - `/api/charts/:chartId/config/:resolution`
+- Никаких fallback на configs.json
+
 ## Шаг 1: Загрузка страницы
 - URL: `/teplo_strogino`
 - `useParams()` извлекает `chartId = "teplo_strogino"`
@@ -77,8 +97,8 @@
 - Рендеринг компонента `Chart` из `react-google-charts`
 
 ## Шаг 12: Применение vAxis в options
-- В превью админки: `viewWindow: { min: vAxisMinForRes, max: vAxisMaxForRes }`
-- В TeploChart: `viewWindow: { min: vAxisMin, max: vAxisMax }` (исправлено - убран Math.min(0, vAxisMin))
+- В превью админки: `viewWindow: { min: Math.min(0, vAxisMinForRes), max: vAxisMaxForRes }`
+- В TeploChart: `viewWindow: { min: Math.min(0, vAxisMin), max: vAxisMax }` (как в превью)
 
 ## Проблемные места для проверки:
 
