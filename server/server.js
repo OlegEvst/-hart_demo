@@ -1138,7 +1138,23 @@ app.get('/api/charts/:chartId/config/:resolution', (req, res) => {
   try {
     const { chartId, resolution } = req.params;
     const key = `${chartId}_${resolution}`;
-    const savedConfig = chartConfigs[key];
+    let savedConfig = chartConfigs[key];
+    
+    // Если конфигурация не найдена в памяти, пробуем перезагрузить из файла
+    // (на случай если файл был обновлен после старта сервера)
+    if (!savedConfig) {
+      try {
+        const fileData = loadFromFile(CONFIGS_FILE, {});
+        if (fileData[key]) {
+          // Обновляем память из файла
+          chartConfigs[key] = fileData[key];
+          savedConfig = fileData[key];
+          console.log(`[API] Конфигурация ${key} перезагружена из файла в память`);
+        }
+      } catch (fileError) {
+        console.warn(`[API] Не удалось перезагрузить конфигурацию из файла:`, fileError);
+      }
+    }
     
     // Если конфигурация не найдена, возвращаем 200 с null
     // Это предотвращает ошибки 404 в консоли браузера

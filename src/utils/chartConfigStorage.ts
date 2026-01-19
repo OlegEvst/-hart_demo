@@ -96,34 +96,7 @@ export async function loadChartConfig(chartId: string, resolution: '276x155' | '
     } else {
       // Если API недоступен (чисто статическая сборка без сервера)
       // Используем configs.json из архива (который синхронизирован с памятью сервера при создании)
-      if (import.meta.env.PROD) {
-        try {
-          const configsResponse = await fetch('/configs.json', { cache: 'no-store' });
-          if (configsResponse.ok) {
-            const contentType = configsResponse.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-              const configsData = await configsResponse.json();
-              const configKey = `${normalizedChartId}_${resolution}`;
-              const savedConfig = configsData[configKey];
-              if (savedConfig && savedConfig.config) {
-                configCache[key] = savedConfig;
-                console.log(`[ConfigStorage] Загружена конфигурация из configs.json (статическая сборка): ${configKey}`);
-                return savedConfig.config;
-              }
-            }
-          }
-        } catch (configsError) {
-          console.warn('[ConfigStorage] configs.json недоступен:', configsError);
-        }
-      }
-      
-      // Если ни API, ни configs.json не доступны, возвращаем null (будет использован дефолт)
-      return null;
-    }
-  } catch (error) {
-    // Если API недоступен (чисто статическая сборка без сервера)
-    // Используем configs.json из архива
-    if (import.meta.env.PROD) {
+      // ВАЖНО: Пробуем configs.json ТОЛЬКО если API вернул ошибку (не 200)
       try {
         const configsResponse = await fetch('/configs.json', { cache: 'no-store' });
         if (configsResponse.ok) {
@@ -134,14 +107,50 @@ export async function loadChartConfig(chartId: string, resolution: '276x155' | '
             const savedConfig = configsData[configKey];
             if (savedConfig && savedConfig.config) {
               configCache[key] = savedConfig;
-              console.log(`[ConfigStorage] Загружена конфигурация из configs.json (статическая сборка, ошибка API): ${configKey}`);
+              console.log(`[ConfigStorage] Загружена конфигурация из configs.json (статическая сборка, API недоступен): ${configKey}`);
               return savedConfig.config;
+            } else {
+              console.warn(`[ConfigStorage] Конфигурация не найдена в configs.json: ${configKey}`);
             }
+          } else {
+            console.warn(`[ConfigStorage] configs.json вернул не JSON (${contentType})`);
           }
+        } else {
+          console.warn(`[ConfigStorage] configs.json недоступен (HTTP ${configsResponse.status})`);
         }
       } catch (configsError) {
-        console.warn('[ConfigStorage] configs.json недоступен:', configsError);
+        console.warn('[ConfigStorage] Ошибка загрузки configs.json:', configsError);
       }
+      
+      // Если ни API, ни configs.json не доступны, возвращаем null (будет использован дефолт)
+      return null;
+    }
+  } catch (error) {
+    // Если API недоступен (чисто статическая сборка без сервера)
+    // Используем configs.json из архива
+    try {
+      const configsResponse = await fetch('/configs.json', { cache: 'no-store' });
+      if (configsResponse.ok) {
+        const contentType = configsResponse.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const configsData = await configsResponse.json();
+          const configKey = `${normalizedChartId}_${resolution}`;
+          const savedConfig = configsData[configKey];
+          if (savedConfig && savedConfig.config) {
+            configCache[key] = savedConfig;
+            console.log(`[ConfigStorage] Загружена конфигурация из configs.json (статическая сборка, ошибка API): ${configKey}`);
+            return savedConfig.config;
+          } else {
+            console.warn(`[ConfigStorage] Конфигурация не найдена в configs.json: ${configKey}`);
+          }
+        } else {
+          console.warn(`[ConfigStorage] configs.json вернул не JSON (${contentType})`);
+        }
+      } else {
+        console.warn(`[ConfigStorage] configs.json недоступен (HTTP ${configsResponse.status})`);
+      }
+    } catch (configsError) {
+      console.warn('[ConfigStorage] Ошибка загрузки configs.json:', configsError);
     }
     
     // Если ни API, ни configs.json не доступны, возвращаем null (будет использован дефолт)
