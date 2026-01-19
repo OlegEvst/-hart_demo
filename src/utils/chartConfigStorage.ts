@@ -94,15 +94,57 @@ export async function loadChartConfig(chartId: string, resolution: '276x155' | '
       
       return null;
     } else {
-      // Если API недоступен, возвращаем null (будет использован дефолт)
-      // Не используем localStorage или статический configs.json - только API
-      console.warn(`[ConfigStorage] API недоступен (HTTP ${response.status}), будет использован дефолт`);
+      // Если API недоступен (чисто статическая сборка без сервера)
+      // Используем configs.json из архива (который синхронизирован с памятью сервера при создании)
+      if (import.meta.env.PROD) {
+        try {
+          const configsResponse = await fetch('/configs.json', { cache: 'no-store' });
+          if (configsResponse.ok) {
+            const contentType = configsResponse.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+              const configsData = await configsResponse.json();
+              const configKey = `${normalizedChartId}_${resolution}`;
+              const savedConfig = configsData[configKey];
+              if (savedConfig && savedConfig.config) {
+                configCache[key] = savedConfig;
+                console.log(`[ConfigStorage] Загружена конфигурация из configs.json (статическая сборка): ${configKey}`);
+                return savedConfig.config;
+              }
+            }
+          }
+        } catch (configsError) {
+          console.warn('[ConfigStorage] configs.json недоступен:', configsError);
+        }
+      }
+      
+      // Если ни API, ни configs.json не доступны, возвращаем null (будет использован дефолт)
       return null;
     }
   } catch (error) {
-    // Если API недоступен, возвращаем null (будет использован дефолт)
-    // Не используем localStorage или статический configs.json - только API
-    console.warn(`[ConfigStorage] Ошибка загрузки конфигурации через API:`, error);
+    // Если API недоступен (чисто статическая сборка без сервера)
+    // Используем configs.json из архива
+    if (import.meta.env.PROD) {
+      try {
+        const configsResponse = await fetch('/configs.json', { cache: 'no-store' });
+        if (configsResponse.ok) {
+          const contentType = configsResponse.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const configsData = await configsResponse.json();
+            const configKey = `${normalizedChartId}_${resolution}`;
+            const savedConfig = configsData[configKey];
+            if (savedConfig && savedConfig.config) {
+              configCache[key] = savedConfig;
+              console.log(`[ConfigStorage] Загружена конфигурация из configs.json (статическая сборка, ошибка API): ${configKey}`);
+              return savedConfig.config;
+            }
+          }
+        }
+      } catch (configsError) {
+        console.warn('[ConfigStorage] configs.json недоступен:', configsError);
+      }
+    }
+    
+    // Если ни API, ни configs.json не доступны, возвращаем null (будет использован дефолт)
     return null;
   }
 }
