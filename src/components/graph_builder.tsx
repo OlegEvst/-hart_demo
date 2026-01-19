@@ -17,6 +17,10 @@ import {
   Stack,
   FormControlLabel,
   Checkbox,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import {
   ArrowBack,
@@ -28,6 +32,8 @@ import {
   CheckCircle,
   Save,
   Download,
+  Fullscreen,
+  FullscreenExit,
 } from "@mui/icons-material";
 import { type ChartDataItem, type ChartDataInfo } from "./ChartDataMapper";
 import { saveChartConfig, loadChartConfig } from "../utils/chartConfigStorage";
@@ -204,6 +210,7 @@ export function GraphBuilder() {
   const [loading, setLoading] = useState(false);
   const [jsonConfig, setJsonConfig] = useState<string>("");
   const [jsonError, setJsonError] = useState<string>("");
+  const [jsonFullscreen, setJsonFullscreen] = useState<boolean>(false);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [editableData, setEditableData] = useState<ChartDataItem[]>([]);
   const [editingPoint, setEditingPoint] = useState<{ seriesIndex: number; dataIndex: number; value: number } | null>(null);
@@ -1825,6 +1832,14 @@ export function GraphBuilder() {
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
             <Typography variant="subtitle2" sx={{ fontSize: "0.75rem", fontWeight: "bold" }}>JSON:</Typography>
             <Stack direction="row" spacing={0.5}>
+              <IconButton
+                size="small"
+                onClick={() => setJsonFullscreen(true)}
+                sx={{ fontSize: "0.7rem", minWidth: "auto", px: 0.5 }}
+                title="На весь экран"
+              >
+                <Fullscreen fontSize="small" />
+              </IconButton>
               <Button
                 variant="contained"
                 size="small"
@@ -1890,6 +1905,107 @@ export function GraphBuilder() {
             }}
           />
         </Paper>
+
+        {/* Диалог полноэкранного редактирования JSON */}
+        <Dialog
+          open={jsonFullscreen}
+          onClose={() => setJsonFullscreen(false)}
+          maxWidth={false}
+          fullWidth
+          PaperProps={{
+            sx: {
+              width: '95vw',
+              height: '95vh',
+              maxWidth: 'none',
+              maxHeight: 'none',
+              m: 1,
+            }
+          }}
+        >
+          <DialogTitle>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6">Редактирование JSON конфигурации</Typography>
+              <IconButton
+                onClick={() => setJsonFullscreen(false)}
+                size="small"
+              >
+                <FullscreenExit />
+              </IconButton>
+            </Stack>
+          </DialogTitle>
+          <DialogContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {jsonError && (
+              <Alert severity="error" sx={{ fontSize: "0.875rem" }}>
+                {jsonError}
+              </Alert>
+            )}
+            <TextField
+              multiline
+              fullWidth
+              value={jsonConfig}
+              onChange={(e) => handleJsonChange(e.target.value)}
+              error={!!jsonError}
+              sx={{
+                flex: 1,
+                fontFamily: "monospace",
+                fontSize: "14px",
+                "& .MuiInputBase-input": {
+                  fontFamily: "monospace",
+                  fontSize: "14px",
+                  lineHeight: 1.5,
+                },
+                "& .MuiInputBase-root": {
+                  height: "100%",
+                  alignItems: "flex-start",
+                },
+              }}
+              inputProps={{
+                style: {
+                  height: "calc(95vh - 200px)",
+                  overflow: "auto",
+                }
+              }}
+            />
+          </DialogContent>
+          <DialogActions sx={{ p: 2, gap: 1 }}>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = jsonConfig;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert(`JSON для ${selectedResolution || currentResolution} скопирован`);
+              }}
+            >
+              Копировать
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                const allConfigs = {
+                  "276x155": generateJsonFromConfig(config276),
+                  "344x193": generateJsonFromConfig(config344),
+                  "900x250": generateJsonFromConfig(config900),
+                  "564x116": generateJsonFromConfig(config564),
+                };
+                const allJson = JSON.stringify(allConfigs, null, 2);
+                setJsonConfig(allJson);
+                setJsonError("");
+              }}
+            >
+              Загрузить все 4 разрешения
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => setJsonFullscreen(false)}
+            >
+              Закрыть
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
 
       {/* Правая часть: графики и настройки */}
