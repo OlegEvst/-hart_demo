@@ -1,5 +1,5 @@
-import type { ChartConfig } from '../types/chartConfig';
-import type { SavedChartConfig } from '../types/savedChartConfig';
+import type { ChartConfig } from './defaultChartConfigs';
+import type { SavedChartConfig } from '../data/allChartsConfigs';
 
 // Кэш для конфигураций (ключ: chartId_resolution)
 const configCache: Record<string, SavedChartConfig> = {};
@@ -138,4 +138,45 @@ export function loadChartConfigSync(chartId: string, resolution: '276x155' | '34
   const key = `${normalizedChartId}_${resolution}`;
   const cached = configCache[key];
   return cached?.config || null;
+}
+
+/**
+ * Сохраняет конфигурацию графика на сервер
+ */
+export async function saveChartConfig(
+  chartId: string,
+  resolution: '276x155' | '344x193' | '900x250' | '564x116',
+  config: ChartConfig
+): Promise<void> {
+  const apiUrl = `${API_BASE_URL}/api/charts/${chartId}/config/${resolution}`;
+  
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ config }),
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Ошибка сохранения конфигурации: HTTP ${response.status}`);
+  }
+  
+  // Обновляем кэш после успешного сохранения
+  const key = `${chartId}_${resolution}`;
+  configCache[key] = {
+    chartId,
+    resolution,
+    config,
+    savedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Извлекает chartId из пути (например, "/teplo_strogino" -> "teplo_strogino")
+ */
+export function getChartIdFromPath(path: string): string {
+  // Убираем начальный и конечный слэш
+  const cleaned = path.replace(/^\/+|\/+$/g, '');
+  return cleaned || '';
 }

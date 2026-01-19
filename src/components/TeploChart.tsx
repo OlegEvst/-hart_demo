@@ -300,11 +300,26 @@ export function TeploChart() {
   
   // ВАЖНО: В превью админки используется ТОЛЬКО chartConfig.vAxisMin/vAxisMax из конфигурации
   // Здесь делаем ТОЧНО ТАК ЖЕ - используем ТОЛЬКО savedConfig.vAxisMin/vAxisMax
+  // ДЛЯ ВСЕХ 504 ГРАФИКОВ - одинаковая логика
   if (savedConfig?.vAxisMin !== undefined && savedConfig?.vAxisMax !== undefined) {
     // Используем значения из конфигурации (как в превью админки)
-    vAxisMin = savedConfig.vAxisMin;
-    vAxisMax = savedConfig.vAxisMax;
-    console.log(`[TeploChart] ✓ Используются значения из конфигурации (как в превью): vAxisMin=${vAxisMin}, vAxisMax=${vAxisMax}`);
+    // ВАЖНО: Если min > max (ошибка в данных), исправляем автоматически
+    let configMin = savedConfig.vAxisMin;
+    let configMax = savedConfig.vAxisMax;
+    
+    // Если min > max, это ошибка в данных - исправляем
+    if (configMin > configMax) {
+      console.warn(`[TeploChart] ⚠ ОШИБКА В КОНФИГУРАЦИИ для ${chartId}: vAxisMin (${configMin}) > vAxisMax (${configMax}), исправляем`);
+      // Меняем местами
+      const temp = configMin;
+      configMin = configMax;
+      configMax = temp;
+      console.warn(`[TeploChart] Исправлено: vAxisMin=${configMin}, vAxisMax=${configMax}`);
+    }
+    
+    vAxisMin = configMin;
+    vAxisMax = configMax;
+    console.log(`[TeploChart] ✓ Используются значения из конфигурации (как в превью): vAxisMin=${vAxisMin}, vAxisMax=${vAxisMax} для ${chartId}`);
   } else {
     // Если конфигурация не загружена, это проблема
     // В production мы уже проверили выше и не рендерим до загрузки
