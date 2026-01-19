@@ -76,9 +76,14 @@
 - Применение всех стилей из `savedConfig`
 - Рендеринг компонента `Chart` из `react-google-charts`
 
+## Шаг 12: Применение vAxis в options
+- В превью админки: `viewWindow: { min: vAxisMinForRes, max: vAxisMaxForRes }`
+- В TeploChart: `viewWindow: { min: vAxisMin, max: vAxisMax }` (исправлено - убран Math.min(0, vAxisMin))
+
 ## Проблемные места для проверки:
 
 1. **Нормализация chartId**: Убедиться, что для стилей и данных используется один и тот же `normalizedChartId`
 2. **Загрузка конфигурации**: Проверить, что ключ в `configs.json` совпадает с тем, что ищется
 3. **vAxis значения**: Убедиться, что `savedConfig.vAxisMin/vAxisMax` не `undefined`
 4. **Production проверка**: Убедиться, что в production график не рендерится до загрузки конфигурации
+5. **viewWindow.min**: Использовать `vAxisMin` напрямую, без `Math.min(0, vAxisMin)` (как в превью)
