@@ -68,7 +68,21 @@ export async function loadChartConfig(chartId: string, resolution: '276x155' | '
   }
   
   // Нормализуем chartId: заменяем elektrops на electricps (как в TeploChart)
-  const normalizedChartId = chartId.replace(/^elektrops/, 'electricps');
+  let normalizedChartId = chartId.replace(/^elektrops/, 'electricps');
+  
+  // Нормализация для известных несоответствий URL и chartId (как в TeploChart)
+  const urlToChartIdMap: Record<string, string> = {
+    // Варианты с szao -> без szao (если данных нет для варианта с szao, используем данные без szao)
+    'teplokotelnaya_voennyy_komissariat_szao_g_moskvy': 'teplokotelnaya_voennyy_komissariat_g_moskvy', // Используем данные без szao
+    'teplokotelnaya_gbu_zhilischnik_rayona_filevskiy_park': 'teplokotelnaya_gbu_zhilischnik_rayona_fil_vskiy_park',
+    // Варианты с kotel_naya -> kotelnaya
+    'teplokotel_naya_voennyy_komissariat_g_moskvy': 'teplokotelnaya_voennyy_komissariat_g_moskvy',
+    'teplokotel_naya_voennyy_komissariat_szao_g_moskvy': 'teplokotelnaya_voennyy_komissariat_g_moskvy', // Используем данные без szao
+  };
+  
+  if (urlToChartIdMap[normalizedChartId]) {
+    normalizedChartId = urlToChartIdMap[normalizedChartId];
+  }
   
   const key = `${normalizedChartId}_${resolution}`;
   
@@ -228,8 +242,21 @@ export async function loadChartConfig(chartId: string, resolution: '276x155' | '
  * ВАЖНО: Использует только кэш, не делает запросов к API
  */
 export function loadChartConfigSync(chartId: string, resolution: '276x155' | '344x193' | '900x250' | '564x116'): ChartConfig | null {
-  // Нормализуем chartId: заменяем elektrops на electricps
-  const normalizedChartId = chartId.replace(/^elektrops/, 'electricps');
+  // Нормализуем chartId: заменяем elektrops на electricps (как в TeploChart)
+  let normalizedChartId = chartId.replace(/^elektrops/, 'electricps');
+  
+  // Нормализация для известных несоответствий URL и chartId (как в TeploChart)
+  const urlToChartIdMap: Record<string, string> = {
+    'teplokotelnaya_voennyy_komissariat_szao_g_moskvy': 'teplokotelnaya_voennyy_komissariat_g_moskvy',
+    'teplokotelnaya_gbu_zhilischnik_rayona_filevskiy_park': 'teplokotelnaya_gbu_zhilischnik_rayona_fil_vskiy_park',
+    'teplokotel_naya_voennyy_komissariat_g_moskvy': 'teplokotelnaya_voennyy_komissariat_g_moskvy',
+    'teplokotel_naya_voennyy_komissariat_szao_g_moskvy': 'teplokotelnaya_voennyy_komissariat_g_moskvy',
+  };
+  
+  if (urlToChartIdMap[normalizedChartId]) {
+    normalizedChartId = urlToChartIdMap[normalizedChartId];
+  }
+  
   const key = `${normalizedChartId}_${resolution}`;
   
   // Используем только кэш (данные, загруженные через API)
