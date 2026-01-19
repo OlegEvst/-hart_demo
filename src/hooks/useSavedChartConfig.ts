@@ -62,7 +62,7 @@ export function useSavedChartConfig(pathOrChartId: string, width: number, height
       return;
     }
     
-    // Обновляем последние значения
+    // Обновляем последние значения ПЕРЕД загрузкой (чтобы избежать повторных загрузок)
     setLastChartId(chartId);
     setLastResolution(resolution);
     

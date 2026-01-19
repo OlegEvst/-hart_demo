@@ -72,10 +72,51 @@ export async function loadChartConfig(chartId: string, resolution: '276x155' | '
   
   const key = `${normalizedChartId}_${resolution}`;
   
+  // ВАЖНО: В статичной сборке (production без сервера) сразу используем configs.json
+  // Не пытаемся обращаться к API, которого нет
+  const isStaticBuild = import.meta.env.PROD && !API_BASE_URL;
+  
+  if (isStaticBuild) {
+    // В статичной сборке используем только configs.json (запеченный в архив)
+    console.log(`[ConfigStorage] Статичная сборка: загрузка из configs.json для ${normalizedChartId}_${resolution}`);
+    try {
+      const configsResponse = await fetch('/configs.json', { cache: 'no-store' });
+      if (configsResponse.ok) {
+        const contentType = configsResponse.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const configsData = await configsResponse.json();
+          const configKey = `${normalizedChartId}_${resolution}`;
+          const savedConfig = configsData[configKey];
+          if (savedConfig && savedConfig.config) {
+            configCache[key] = savedConfig;
+            console.log(`[ConfigStorage] ✓ Загружена конфигурация из configs.json (статичная сборка): ${configKey}`);
+            console.log(`[ConfigStorage] Значения vAxis: min=${savedConfig.config.vAxisMin}, max=${savedConfig.config.vAxisMax}`);
+            return savedConfig.config;
+          } else {
+            console.warn(`[ConfigStorage] ⚠ Конфигурация не найдена в configs.json: ${configKey}`);
+            // Показываем доступные ключи для отладки
+            const availableKeys = Object.keys(configsData).filter(k => k.includes(normalizedChartId)).slice(0, 5);
+            if (availableKeys.length > 0) {
+              console.warn(`[ConfigStorage] Доступные ключи для ${normalizedChartId}:`, availableKeys);
+            }
+          }
+        } else {
+          console.warn(`[ConfigStorage] ⚠ configs.json вернул не JSON (${contentType})`);
+        }
+      } else {
+        console.warn(`[ConfigStorage] ⚠ configs.json недоступен (HTTP ${configsResponse.status})`);
+      }
+    } catch (configsError) {
+      console.warn('[ConfigStorage] ⚠ Ошибка загрузки configs.json:', configsError);
+    }
+    // Если configs.json недоступен, возвращаем null (будет использован дефолт)
+    return null;
+  }
+  
+  // В development или production с сервером - используем API
   try {
     // ЕДИНСТВЕННЫЙ ИСТОЧНИК: API endpoint (как в админке)
     // Всегда пробуем API сначала, который читает из chartConfigs в памяти сервера
-    // Если API недоступен (чисто статическая сборка), используем configs.json
     const apiUrl = `${API_BASE_URL}/api/charts/${normalizedChartId}/config/${resolution}`;
     const response = await fetch(apiUrl, {
       cache: 'no-store', // Не кэшируем, всегда загружаем актуальную версию
