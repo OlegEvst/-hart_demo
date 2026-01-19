@@ -257,16 +257,21 @@ export function TeploChart() {
     ? calculateAdaptiveAxisRange(allValues, resolution, dataType)
     : { min: 0, max: 2, gridlinesCount: 1 };
   
-  // Используем значения из сохраненной конфигурации, если они есть (как в превью)
-  // Иначе вычисляем из данных
+  // ВАЖНО: Всегда используем значения из сохраненной конфигурации (как в админке)
+  // Если конфигурация не загружена, ждем её загрузки, а не вычисляем из данных
+  // Это гарантирует, что статичная сборка использует те же стили, что админка
   let vAxisMin: number;
   let vAxisMax: number;
   
-  // Если в конфигурации есть значения vAxisMin/vAxisMax, используем их
+  // Если в конфигурации есть значения vAxisMin/vAxisMax, ВСЕГДА используем их
+  // Это единственный источник данных (как в админке)
   if (savedConfig?.vAxisMin !== undefined && savedConfig?.vAxisMax !== undefined) {
     vAxisMin = savedConfig.vAxisMin;
     vAxisMax = savedConfig.vAxisMax;
+    console.log(`[TeploChart] Используются значения из конфигурации: vAxisMin=${vAxisMin}, vAxisMax=${vAxisMax}`);
   } else if (allValues.length > 0) {
+    // Только если конфигурация не загружена, вычисляем из данных (временное решение)
+    console.warn(`[TeploChart] Конфигурация не загружена для ${chartId}, вычисляем из данных (это не должно происходить в production)`);
     // Иначе вычисляем из данных (как в превью)
     const minValue = Math.min(...allValues);
     const maxValue = Math.max(...allValues);
