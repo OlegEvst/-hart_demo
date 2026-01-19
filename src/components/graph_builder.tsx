@@ -895,23 +895,25 @@ export function GraphBuilder() {
     try {
       const parsed = JSON.parse(json);
       
-      // Проверяем, является ли это JSON с тремя разрешениями
-      if (parsed["276x155"] && parsed["344x193"] && parsed["900x250"]) {
-        // Применяем конфигурации для всех трех разрешений
+      // Проверяем, является ли это JSON с четырьмя разрешениями
+      if (parsed["276x155"] && parsed["344x193"] && parsed["900x250"] && parsed["564x116"]) {
+        // Применяем конфигурации для всех четырех разрешений
         const config276Updated = applyConfigFromJson(parsed["276x155"], config276);
         const config344Updated = applyConfigFromJson(parsed["344x193"], config344);
         const config900Updated = applyConfigFromJson(parsed["900x250"], config900);
+        const config564Updated = applyConfigFromJson(parsed["564x116"], config564);
         
         setConfig276(config276Updated);
         setConfig344(config344Updated);
         setConfig900(config900Updated);
+        setConfig564(config564Updated);
         
         // Обновляем JSON для текущего разрешения
         const currentJson = JSON.stringify(generateJsonFromConfig(config), null, 2);
         setJsonConfig(currentJson);
         
         setJsonError("");
-        alert('Конфигурации для всех трех разрешений успешно применены!');
+        alert('Конфигурации для всех четырех разрешений успешно применены!');
       } else {
         // Обычная конфигурация для текущего разрешения
         const updates: Partial<ChartConfig> = {
