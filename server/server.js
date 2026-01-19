@@ -1278,7 +1278,44 @@ app.get('/api/generate-static-archive-minimal', async (req, res) => {
     // Подключаем архив к ответу
     archive.pipe(res);
     
-    // Принудительно сохраняем актуальные стили из памяти
+    // Принудительно сохраняем актуальные стили из памяти (как использует админка)
+    // Сначала сохраняем все изменения из кэша (если есть)
+    if (saveDataCache[CONFIGS_FILE]) {
+      try {
+        // Очищаем таймер, если он есть
+        if (saveTimers[CONFIGS_FILE]) {
+          clearTimeout(saveTimers[CONFIGS_FILE]);
+          delete saveTimers[CONFIGS_FILE];
+        }
+        
+        // Ждем, если файл заблокирован
+        let attempts = 0;
+        while (fileWriteLocks[CONFIGS_FILE] && attempts < 50) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          attempts++;
+        }
+        
+        // Устанавливаем блокировку
+        fileWriteLocks[CONFIGS_FILE] = true;
+        
+        try {
+          // Сохраняем немедленно из кэша (это актуальные данные)
+          const dataToSave = saveDataCache[CONFIGS_FILE];
+          const tempPath = `${CONFIGS_FILE}.tmp`;
+          fs.writeFileSync(tempPath, JSON.stringify(dataToSave, null, 2), 'utf-8');
+          fs.renameSync(tempPath, CONFIGS_FILE);
+          delete saveDataCache[CONFIGS_FILE];
+          console.log(`✓ Сохранен configs.json из кэша перед созданием архива (${Object.keys(dataToSave).length} записей)`);
+        } finally {
+          delete fileWriteLocks[CONFIGS_FILE];
+        }
+      } catch (err) {
+        console.warn('⚠ Не удалось сохранить configs.json из кэша:', err.message);
+        delete fileWriteLocks[CONFIGS_FILE];
+      }
+    }
+    
+    // Затем синхронизируем текущее состояние chartConfigs из памяти (главный источник, как использует админка)
     try {
       let attempts = 0;
       while (fileWriteLocks[CONFIGS_FILE] && attempts < 50) {
@@ -1289,11 +1326,16 @@ app.get('/api/generate-static-archive-minimal', async (req, res) => {
       fileWriteLocks[CONFIGS_FILE] = true;
       
       try {
+        // Используем актуальное состояние из памяти (это то, что использует админка для превью)
         const currentConfigs = { ...chartConfigs };
+        
+        // Атомарная запись: сначала во временный файл, потом переименование
         const tempPath = `${CONFIGS_FILE}.tmp`;
         fs.writeFileSync(tempPath, JSON.stringify(currentConfigs, null, 2), 'utf-8');
         fs.renameSync(tempPath, CONFIGS_FILE);
-        console.log(`✓ Синхронизирован configs.json с актуальным состоянием (${Object.keys(currentConfigs).length} записей)`);
+        
+        const count = Object.keys(currentConfigs).length;
+        console.log(`✓ Синхронизирован configs.json с актуальным состоянием из памяти (${count} записей) - те же данные, что использует админка для превью`);
       } finally {
         delete fileWriteLocks[CONFIGS_FILE];
       }
