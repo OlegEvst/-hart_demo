@@ -1360,10 +1360,22 @@ app.get('/api/generate-static-archive-minimal', async (req, res) => {
       delete fileWriteLocks[CONFIGS_FILE];
     }
     
-    // Добавляем configs.json (актуальный)
+    // Добавляем configs.json (актуальный, синхронизированный с памятью)
     if (fs.existsSync(configsPath)) {
+      // Проверяем содержимое перед добавлением в архив
+      const fileContent = fs.readFileSync(configsPath, 'utf-8');
+      const configsData = JSON.parse(fileContent);
+      const configsCount = Object.keys(configsData).length;
+      
+      // Проверяем пример для подтверждения актуальности
+      const exampleKey = Object.keys(configsData).find(k => k.includes('teplo_strogino') && k.includes('900x250'));
+      if (exampleKey && configsData[exampleKey]) {
+        const ex = configsData[exampleKey];
+        console.log(`✓ Проверка актуальности (${exampleKey}): vAxisMin=${ex.config?.vAxisMin}, vAxisMax=${ex.config?.vAxisMax}`);
+      }
+      
       archive.file(configsPath, { name: 'configs.json' });
-      console.log('✓ Добавлен актуальный configs.json');
+      console.log(`✓ Добавлен актуальный configs.json в архив (${configsCount} записей) - те же данные, что использует админка`);
     } else {
       console.error('❌ configs.json не найден!');
     }
