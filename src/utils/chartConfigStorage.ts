@@ -136,7 +136,15 @@ export async function loadChartConfig(chartId: string, resolution: '276x155' | '
     }
   } catch (error) {
     // Если произошла ошибка сети при запросе к API, пробуем configs.json
-    console.warn(`[ConfigStorage] ⚠ Ошибка запроса к API:`, error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.warn(`[ConfigStorage] ⚠ Ошибка запроса к API (${apiUrl}):`, errorMessage);
+    
+    // Если ошибка "Unexpected token '<'" - это значит сервер вернул HTML вместо JSON
+    // Это может быть из-за неправильного URL или проблем с роутингом
+    if (errorMessage.includes("Unexpected token '<'")) {
+      console.warn(`[ConfigStorage] ⚠ Сервер вернул HTML вместо JSON для ${apiUrl}, пробуем configs.json`);
+    }
+    
     try {
       const configsResponse = await fetch('/configs.json', { cache: 'no-store' });
       if (configsResponse.ok) {
@@ -148,9 +156,15 @@ export async function loadChartConfig(chartId: string, resolution: '276x155' | '
           if (savedConfig && savedConfig.config) {
             configCache[key] = savedConfig;
             console.log(`[ConfigStorage] ✓ Загружена конфигурация из configs.json (ошибка API): ${configKey}`);
+            console.log(`[ConfigStorage] Значения vAxis: min=${savedConfig.config.vAxisMin}, max=${savedConfig.config.vAxisMax}`);
             return savedConfig.config;
           } else {
             console.warn(`[ConfigStorage] ⚠ Конфигурация не найдена в configs.json: ${configKey}`);
+            // Показываем доступные ключи для отладки
+            const availableKeys = Object.keys(configsData).filter(k => k.includes(normalizedChartId)).slice(0, 5);
+            if (availableKeys.length > 0) {
+              console.warn(`[ConfigStorage] Доступные ключи для ${normalizedChartId}:`, availableKeys);
+            }
           }
         } else {
           console.warn(`[ConfigStorage] ⚠ configs.json вернул не JSON (${contentType})`);

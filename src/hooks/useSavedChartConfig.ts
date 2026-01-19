@@ -30,11 +30,12 @@ export interface ChartConfigValues {
  */
 export function useSavedChartConfig(pathOrChartId: string, width: number, height: number, isTeploChart: boolean = false): ChartConfigValues | null {
   const [savedConfig, setSavedConfig] = useState<ChartConfigValues | null>(null);
+  const [lastChartId, setLastChartId] = useState<string>('');
+  const [lastResolution, setLastResolution] = useState<Resolution | null>(null);
   
   useEffect(() => {
     // Если путь начинается с /, обрабатываем как путь, иначе используем как chartId напрямую
     const chartId = pathOrChartId.startsWith('/') ? getChartIdFromPath(pathOrChartId) : pathOrChartId;
-    console.log(`[useSavedChartConfig] Загрузка конфигурации для пути/ID: ${pathOrChartId}, извлеченный ID: ${chartId}`);
     
     // Определяем разрешение на основе размера окна
     // Более широкие диапазоны для определения разрешения
@@ -53,6 +54,19 @@ export function useSavedChartConfig(pathOrChartId: string, width: number, height
       // Если не попадает в диапазоны, используем 276x155 как дефолт для маленьких экранов
       resolution = width < 300 ? '276x155' : (width < 500 ? '344x193' : '900x250');
     }
+    
+    // ВАЖНО: Перезагружаем конфигурацию только если изменился chartId или resolution
+    // Не перезагружаем при каждом изменении размера окна (это вызывает мерцание)
+    if (chartId === lastChartId && resolution === lastResolution && savedConfig !== null) {
+      // Конфигурация уже загружена для этого chartId и resolution, не перезагружаем
+      return;
+    }
+    
+    // Обновляем последние значения
+    setLastChartId(chartId);
+    setLastResolution(resolution);
+    
+    console.log(`[useSavedChartConfig] Загрузка конфигурации для пути/ID: ${pathOrChartId}, извлеченный ID: ${chartId}, resolution: ${resolution}`);
     
     // Асинхронная загрузка конфигурации с сервера
     const loadConfig = async () => {
@@ -122,7 +136,7 @@ export function useSavedChartConfig(pathOrChartId: string, width: number, height
     };
     
     loadConfig().catch(console.error);
-  }, [pathOrChartId, width, height, isTeploChart]);
+  }, [pathOrChartId, width, height, isTeploChart, lastChartId, lastResolution, savedConfig]);
   
   return savedConfig;
 }
