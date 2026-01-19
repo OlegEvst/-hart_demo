@@ -1379,11 +1379,15 @@ app.get('/api/generate-static-archive', async (req, res) => {
     }
     
     // Добавляем .htaccess (из статичной папки или создаем базовый)
-    // Сначала проверяем в dist
+    // Сначала проверяем в dist (будет добавлен также через addDirectoryToArchive, но это не критично)
+    let htaccessAdded = false;
     if (fs.existsSync(htaccessPath)) {
       archive.file(htaccessPath, { name: '.htaccess' });
-      console.log('Добавлен .htaccess из dist');
-    } else {
+      console.log('✓ Добавлен .htaccess из dist');
+      htaccessAdded = true;
+    }
+    
+    if (!htaccessAdded) {
       // Ищем в статичной папке (пример из Desktop)
       const staticHtaccessPaths = [
         path.join(PROJECT_ROOT, '..', 'tec-graphs-ip.ru-STATIC-ONLY', '.htaccess'),
@@ -1471,12 +1475,14 @@ app.get('/api/generate-static-archive', async (req, res) => {
         }
         
         if (entry.isDirectory()) {
-          // Пропускаем node_modules и другие служебные папки
+          // Пропускаем node_modules и другие служебные папки (но не .htaccess)
           if (entry.name === 'node_modules' || (entry.name.startsWith('.') && entry.name !== '.htaccess')) {
             continue;
           }
           addDirectoryToArchive(fullPath, archivePath);
         } else if (entry.isFile()) {
+          // Пропускаем .htaccess если он уже был добавлен отдельно выше
+          // Но если его нет в dist, он будет добавлен из других источников выше
           archive.file(fullPath, { name: archivePath });
           console.log(`✓ Добавлен файл: ${archivePath}`);
         }
@@ -1484,6 +1490,7 @@ app.get('/api/generate-static-archive', async (req, res) => {
     };
     
     // Добавляем все файлы из dist (кроме configs.json, который добавляется отдельно)
+    // .htaccess добавляется отдельно выше, но если он есть в dist, он будет добавлен и здесь (дублирование не критично)
     console.log('Добавление всех файлов из dist...');
     addDirectoryToArchive(distPath);
     console.log('✓ Все файлы из dist добавлены в архив');
