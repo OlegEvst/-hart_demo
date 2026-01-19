@@ -500,7 +500,7 @@ export function TeploChart() {
     },
     vAxis: {
       ...commonOptions.vAxis,
-      viewWindow: { min: Math.min(0, vAxisMin), max: vAxisMax },
+      viewWindow: { min: vAxisMin, max: vAxisMax },
       gridlines: { 
         color: "#F2F2F7", 
         count: vAxisGridlinesCount,
