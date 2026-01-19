@@ -37,6 +37,17 @@ export function TeploChart() {
   // Это гарантирует, что ключи совпадают с теми, что используются в конструкторе
   const savedConfig = useSavedChartConfig(chartId || '', width, height);
   
+  // ВАЖНО: В production статичной сборке ждем загрузки конфигурации перед рендерингом
+  // Это предотвращает мерцание (сначала правильные вычисленные значения, потом неправильные из configs.json)
+  const [configLoading, setConfigLoading] = useState(true);
+  
+  useEffect(() => {
+    // Если конфигурация загружена (не null), можно рендерить
+    if (savedConfig !== null) {
+      setConfigLoading(false);
+    }
+  }, [savedConfig]);
+  
   useEffect(() => {
     const loadData = async () => {
       if (!chartId) return;
