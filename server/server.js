@@ -1536,80 +1536,63 @@ app.get('/api/generate-static-archive', async (req, res) => {
     archive.pipe(res);
     
     // Добавляем configs.json (актуальный со стилями) - ЕДИНСТВЕННЫЙ ИСТОЧНИК ДАННЫХ
-    // Сначала принудительно сохраняем все изменения из кэша (БЕЗОПАСНО для множественных пользователей)
+    // ПРОСТАЯ ЛОГИКА: Используем те же данные из памяти (chartConfigs), что использует админка для превью
+    // Сначала сохраняем все изменения из кэша в файл (если есть)
     if (saveDataCache[CONFIGS_FILE]) {
       try {
-        // Очищаем таймер, если он есть
         if (saveTimers[CONFIGS_FILE]) {
           clearTimeout(saveTimers[CONFIGS_FILE]);
           delete saveTimers[CONFIGS_FILE];
         }
         
-        // Ждем, если файл заблокирован
         let attempts = 0;
         while (fileWriteLocks[CONFIGS_FILE] && attempts < 50) {
           await new Promise(resolve => setTimeout(resolve, 100));
           attempts++;
         }
         
-        // Устанавливаем блокировку
         fileWriteLocks[CONFIGS_FILE] = true;
-        
         try {
-          // Сохраняем немедленно (атомарно)
           const dataToSave = saveDataCache[CONFIGS_FILE];
           const tempPath = `${CONFIGS_FILE}.tmp`;
           fs.writeFileSync(tempPath, JSON.stringify(dataToSave, null, 2), 'utf-8');
           fs.renameSync(tempPath, CONFIGS_FILE);
           delete saveDataCache[CONFIGS_FILE];
-          console.log('✓ Сохранен актуальный configs.json из кэша перед созданием архива');
+          // Обновляем память из сохраненных данных
+          chartConfigs = dataToSave;
         } finally {
           delete fileWriteLocks[CONFIGS_FILE];
         }
       } catch (err) {
-        console.warn('⚠ Не удалось сохранить configs.json из кэша:', err.message);
+        console.warn('⚠ Не удалось сохранить из кэша:', err.message);
         delete fileWriteLocks[CONFIGS_FILE];
       }
     }
     
-    // Принудительно сохраняем текущее состояние chartConfigs из памяти (главный источник)
-    // БЕЗОПАСНО для одновременной работы: используем блокировку и атомарную запись
+    // Используем актуальное состояние из памяти (chartConfigs) - те же данные, что использует админка
+    // Записываем в файл перед добавлением в архив
     try {
-      // Ждем, если файл заблокирован другой операцией
       let attempts = 0;
       while (fileWriteLocks[CONFIGS_FILE] && attempts < 50) {
         await new Promise(resolve => setTimeout(resolve, 100));
         attempts++;
       }
       
-      // Устанавливаем блокировку
       fileWriteLocks[CONFIGS_FILE] = true;
-      
       try {
-        // Используем актуальное состояние из памяти (это то, что используется в админке)
+        // Используем актуальное состояние из памяти (chartConfigs) - это то, что использует админка
         const currentConfigs = { ...chartConfigs };
-        
-        // Атомарная запись: сначала во временный файл, потом переименование
         const tempPath = `${CONFIGS_FILE}.tmp`;
         fs.writeFileSync(tempPath, JSON.stringify(currentConfigs, null, 2), 'utf-8');
         fs.renameSync(tempPath, CONFIGS_FILE);
         
         const count = Object.keys(currentConfigs).length;
-        console.log(`✓ Синхронизирован configs.json с актуальным состоянием из памяти (${count} записей)`);
-        
-        // Проверяем пример для подтверждения
-        const exampleKey = Object.keys(currentConfigs).find(k => k.includes('teploait_1_abv_sokolovo') && k.includes('900x250'));
-        if (exampleKey && currentConfigs[exampleKey]) {
-          const ex = currentConfigs[exampleKey];
-          console.log(`✓ Пример конфигурации (${exampleKey}): vAxisMin=${ex.config?.vAxisMin}, vAxisMax=${ex.config?.vAxisMax}`);
-        }
+        console.log(`✓ Используются данные из памяти (chartConfigs) - ${count} записей, те же что использует админка для превью`);
       } finally {
-        // Снимаем блокировку
         delete fileWriteLocks[CONFIGS_FILE];
       }
     } catch (err) {
-      console.warn('⚠ Не удалось синхронизировать configs.json:', err.message);
-      // Снимаем блокировку в случае ошибки
+      console.warn('⚠ Не удалось записать configs.json:', err.message);
       delete fileWriteLocks[CONFIGS_FILE];
     }
     
