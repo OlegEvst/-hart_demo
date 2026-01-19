@@ -1614,6 +1614,77 @@ export function GraphBuilder() {
         <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", mb: 2.5 }}>
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button
+              variant="outlined"
+              color="primary"
+              size="small"
+              startIcon={<Download />}
+              onClick={async (event) => {
+                const button = event.currentTarget;
+                const originalText = button.textContent;
+                
+                try {
+                  const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+                  
+                  button.disabled = true;
+                  if (button.textContent !== null) {
+                    button.textContent = 'Генерация...';
+                  }
+                  
+                  const response = await fetch(`${API_BASE_URL}/api/generate-static-archive-minimal`);
+                  
+                  if (!response.ok) {
+                    let errorMessage = 'Ошибка генерации архива';
+                    try {
+                      const error = await response.json();
+                      errorMessage = error.error || errorMessage;
+                    } catch {
+                      errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                    }
+                    throw new Error(errorMessage);
+                  }
+                  
+                  const contentType = response.headers.get('Content-Type');
+                  if (!contentType || !contentType.includes('zip')) {
+                    throw new Error('Сервер вернул не ZIP файл');
+                  }
+                  
+                  const blob = await response.blob();
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  
+                  const contentDisposition = response.headers.get('Content-Disposition');
+                  let filename = 'tec-graphs-static.zip';
+                  if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                    if (filenameMatch && filenameMatch[1]) {
+                      filename = filenameMatch[1].replace(/['"]/g, '');
+                    }
+                  }
+                  
+                  a.download = filename;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  window.URL.revokeObjectURL(url);
+                  
+                  button.disabled = false;
+                  if (button.textContent !== null) {
+                    button.textContent = originalText;
+                  }
+                } catch (error) {
+                  console.error('Ошибка генерации архива:', error);
+                  alert(`Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
+                  button.disabled = false;
+                  if (button.textContent !== null) {
+                    button.textContent = originalText;
+                  }
+                }
+              }}
+            >
+              Статичный архив
+            </Button>
+            <Button
               variant="contained"
               color="primary"
               size="small"

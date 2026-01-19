@@ -1230,6 +1230,191 @@ app.post('/api/build', async (req, res) => {
   return res.json({ success: true, message: 'Сборка отключена - изменения применяются автоматически' });
 });
 
+// API: Генерация минимального статичного архива (только dist + configs.json, как раньше)
+app.get('/api/generate-static-archive-minimal', async (req, res) => {
+  console.log('[API] Запрос на генерацию минимального статичного архива получен');
+  
+  // Защита от одновременной генерации архива несколькими пользователями
+  if (archiveGenerationInProgress) {
+    return res.status(429).json({ error: 'Генерация архива уже выполняется. Пожалуйста, подождите.' });
+  }
+  
+  archiveGenerationInProgress = true;
+  
+  try {
+    console.log('Начало генерации минимального статичного архива...');
+    
+    // Пути к файлам и папкам
+    const distPath = path.join(PROJECT_ROOT, 'dist');
+    const distAssetsPath = path.join(distPath, 'assets');
+    const configsPath = CONFIGS_FILE;
+    const htaccessPath = path.join(distPath, '.htaccess');
+    const indexHtmlPath = path.join(distPath, 'index.html');
+    
+    // Проверяем существование необходимых файлов
+    if (!fs.existsSync(distPath)) {
+      return res.status(404).json({ error: 'Папка dist не найдена. Выполните сборку проекта: npm run build' });
+    }
+    
+    if (!fs.existsSync(distAssetsPath)) {
+      return res.status(404).json({ error: 'Папка dist/assets не найдена' });
+    }
+    
+    if (!fs.existsSync(indexHtmlPath)) {
+      return res.status(404).json({ error: 'Файл dist/index.html не найден' });
+    }
+    
+    // Создаем архив
+    const archive = archiver('zip', {
+      zlib: { level: 9 } // Максимальное сжатие
+    });
+    
+    // Устанавливаем заголовки для скачивания
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const filename = `tec-graphs-static-${timestamp}.zip`;
+    res.attachment(filename);
+    res.setHeader('Content-Type', 'application/zip');
+    
+    // Подключаем архив к ответу
+    archive.pipe(res);
+    
+    // Принудительно сохраняем актуальные стили из памяти
+    try {
+      let attempts = 0;
+      while (fileWriteLocks[CONFIGS_FILE] && attempts < 50) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+      }
+      
+      fileWriteLocks[CONFIGS_FILE] = true;
+      
+      try {
+        const currentConfigs = { ...chartConfigs };
+        const tempPath = `${CONFIGS_FILE}.tmp`;
+        fs.writeFileSync(tempPath, JSON.stringify(currentConfigs, null, 2), 'utf-8');
+        fs.renameSync(tempPath, CONFIGS_FILE);
+        console.log(`✓ Синхронизирован configs.json с актуальным состоянием (${Object.keys(currentConfigs).length} записей)`);
+      } finally {
+        delete fileWriteLocks[CONFIGS_FILE];
+      }
+    } catch (err) {
+      console.warn('⚠ Не удалось синхронизировать configs.json:', err.message);
+      delete fileWriteLocks[CONFIGS_FILE];
+    }
+    
+    // Добавляем configs.json (актуальный)
+    if (fs.existsSync(configsPath)) {
+      archive.file(configsPath, { name: 'configs.json' });
+      console.log('✓ Добавлен актуальный configs.json');
+    } else {
+      console.error('❌ configs.json не найден!');
+    }
+    
+    // Добавляем .htaccess
+    if (fs.existsSync(htaccessPath)) {
+      archive.file(htaccessPath, { name: '.htaccess' });
+      console.log('✓ Добавлен .htaccess');
+    } else {
+      const basicHtaccess = `<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^index\\.html$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . index.html [L]
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json application/xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/html "access plus 0 seconds"
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType application/x-javascript "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\\.(html|htm)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Content-Type-Options "nosniff"
+    Header unset X-Frame-Options
+    Header set Content-Security-Policy "frame-ancestors *;"
+    Header unset Server
+    Header unset X-Powered-By
+</IfModule>
+
+<IfModule mod_mime.c>
+    AddType application/javascript js
+    AddType text/css css
+    AddType image/svg+xml svg
+    AddType application/json json
+</IfModule>`;
+      archive.append(basicHtaccess, { name: '.htaccess' });
+      console.log('✓ Создан базовый .htaccess');
+    }
+    
+    // Добавляем index.html
+    archive.file(indexHtmlPath, { name: 'index.html' });
+    console.log('✓ Добавлен index.html');
+    
+    // Добавляем всю папку assets
+    const addDirectoryToArchive = (dirPath, archivePrefix = '') => {
+      if (!fs.existsSync(dirPath)) return;
+      const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dirPath, entry.name);
+        const archivePath = archivePrefix ? `${archivePrefix}/${entry.name}` : entry.name;
+        
+        if (entry.isDirectory()) {
+          if (entry.name === '.git') continue;
+          addDirectoryToArchive(fullPath, archivePath);
+        } else if (entry.isFile()) {
+          archive.file(fullPath, { name: archivePath });
+        }
+      }
+    };
+    
+    addDirectoryToArchive(distAssetsPath, 'assets');
+    console.log('✓ Добавлена папка assets');
+    
+    // Добавляем vite.svg если есть
+    const viteSvgPath = path.join(distPath, 'vite.svg');
+    if (fs.existsSync(viteSvgPath)) {
+      archive.file(viteSvgPath, { name: 'vite.svg' });
+      console.log('✓ Добавлен vite.svg');
+    }
+    
+    // Завершаем архив
+    await archive.finalize();
+    
+    console.log('Минимальный архив успешно создан и отправлен');
+  } catch (error) {
+    console.error('Ошибка генерации минимального архива:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Ошибка генерации архива: ' + error.message });
+    }
+  } finally {
+    archiveGenerationInProgress = false;
+  }
+});
+
 // API: Генерация статичного архива для развертывания
 app.get('/api/generate-static-archive', async (req, res) => {
   console.log('[API] Запрос на генерацию статичного архива получен');
