@@ -1505,54 +1505,10 @@ app.get('/api/generate-static-archive', async (req, res) => {
     addDirectoryToArchive(distPath, '', ['configs.json']);
     console.log('✓ Все файлы из dist добавлены в архив');
     
-    // Добавляем исходные файлы проекта для полной работоспособности
-    console.log('Добавление исходных файлов проекта...');
-    
-    // Конфигурационные файлы
-    const configFiles = [
-      'package.json',
-      'package-lock.json',
-      'vite.config.ts',
-      'tsconfig.json',
-      'tsconfig.app.json',
-      'tsconfig.node.json',
-    ];
-    
-    for (const configFile of configFiles) {
-      const configPath = path.join(PROJECT_ROOT, configFile);
-      if (fs.existsSync(configPath)) {
-        archive.file(configPath, { name: configFile });
-        console.log(`✓ Добавлен файл: ${configFile}`);
-      } else {
-        console.warn(`⚠ Файл не найден: ${configFile}`);
-      }
-    }
-    
-    // Папка src (исходный код)
-    const srcPath = path.join(PROJECT_ROOT, 'src');
-    if (fs.existsSync(srcPath)) {
-      addDirectoryToArchive(srcPath, 'src', []);
-      console.log('✓ Добавлена папка src');
-    }
-    
-    // Папка public (публичные файлы)
-    const publicPath = path.join(PROJECT_ROOT, 'public');
-    if (fs.existsSync(publicPath)) {
-      addDirectoryToArchive(publicPath, 'public', []);
-      console.log('✓ Добавлена папка public');
-    }
-    
-    // node_modules (зависимости)
-    const nodeModulesPath = path.join(PROJECT_ROOT, 'node_modules');
-    if (fs.existsSync(nodeModulesPath)) {
-      console.log('Добавление node_modules (это может занять время)...');
-      addDirectoryToArchive(nodeModulesPath, 'node_modules', []);
-      console.log('✓ Добавлена папка node_modules');
-    } else {
-      console.warn('⚠ node_modules не найдена - зависимости нужно будет установить через npm install');
-    }
-    
-    console.log('✓ Все исходные файлы проекта добавлены в архив');
+    // Для статического развертывания нужны только файлы из dist и configs.json
+    // src/, public/, node_modules/ не нужны - они используются только для разработки/сборки
+    // Файлы из public уже включены в dist при сборке
+    console.log('✓ Архив готов для статического развертывания');
     
     // Завершаем архив
     await archive.finalize();
