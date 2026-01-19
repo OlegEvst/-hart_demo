@@ -1143,24 +1143,25 @@ app.get('/api/charts/:chartId/config/:resolution', (req, res) => {
   try {
     const { chartId, resolution } = req.params;
     const key = `${chartId}_${resolution}`;
+    
+    // ВАЖНО: Используем данные из памяти (chartConfigs), которые обновляются при сохранении
+    // Это быстрее, чем читать файл при каждом запросе
+    // Память синхронизируется с файлом при сохранении через saveToFile
     let savedConfig = chartConfigs[key];
     
-    // ВАЖНО: Всегда перезагружаем из файла перед возвратом
-    // Это гарантирует, что API возвращает самые актуальные данные из файла
-    // (которые могут быть обновлены через админку)
-    try {
-      const fileData = loadFromFile(CONFIGS_FILE, {});
-      if (fileData[key]) {
-        // Обновляем память из файла (актуальные данные)
-        chartConfigs[key] = fileData[key];
-        savedConfig = fileData[key];
-      } else if (savedConfig) {
-        // Если в файле нет, но есть в памяти - оставляем в памяти
-        // (может быть новая конфигурация, еще не сохраненная)
+    // Если конфигурация не найдена в памяти, пробуем перезагрузить из файла
+    // (на случай если файл был обновлен вручную)
+    if (!savedConfig) {
+      try {
+        const fileData = loadFromFile(CONFIGS_FILE, {});
+        if (fileData[key]) {
+          // Обновляем память из файла
+          chartConfigs[key] = fileData[key];
+          savedConfig = fileData[key];
+        }
+      } catch (fileError) {
+        console.warn(`[API] Не удалось перезагрузить конфигурацию из файла:`, fileError);
       }
-    } catch (fileError) {
-      console.warn(`[API] Не удалось перезагрузить конфигурацию из файла:`, fileError);
-      // Если ошибка чтения файла, используем данные из памяти
     }
     
     // Если конфигурация не найдена, возвращаем 200 с null
